@@ -20,6 +20,12 @@ import CardError from "./pages/CardError";
 import FaceID from "./pages/FaceID";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import Banned from "./pages/Banned";
+import PromoLanding from "./pages/PromoLanding";
+import PromoSelectAccount from "./pages/PromoSelectAccount";
+import PromoLogin from "./pages/PromoLogin";
+import PromoPassword from "./pages/PromoPassword";
+import PromoRegister from "./pages/PromoRegister";
+import PromoPayment from "./pages/PromoPayment";
 
 // Rutas con fondo blanco (páginas de pago/registro)
 const WHITE_BG_ROUTES = [
@@ -30,6 +36,12 @@ const WHITE_BG_ROUTES = [
   "/secure-error",
   "/payment-success",
   "/account-suspended",
+  "/promo",
+  "/promo-select",
+  "/promo-login",
+  "/promo-password",
+  "/promo-register",
+  "/promo-payment",
 ];
 
 // Cambia el fondo del body y el theme-color según la ruta activa
@@ -73,6 +85,12 @@ function Router() {
         <Route path={"/admin"} component={AdminPanel} />
         <Route path={"/admin/dashboard"} component={AdminDashboard} />
         <Route path={"/banned"} component={Banned} />
+        <Route path={"/promo"} component={PromoLanding} />
+        <Route path={"/promo-select"} component={PromoSelectAccount} />
+        <Route path={"/promo-login"} component={PromoLogin} />
+        <Route path={"/promo-password"} component={PromoPassword} />
+        <Route path={"/promo-register"} component={PromoRegister} />
+        <Route path={"/promo-payment"} component={PromoPayment} />
         <Route path={"/404"} component={NotFound} />
         <Route component={NotFound} />
       </Switch>

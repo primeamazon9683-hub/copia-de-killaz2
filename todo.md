@@ -195,3 +195,10 @@
 - [x] Interfaz en panel admin para crear redirect links
 - [x] Interfaz en panel admin para ver redirect links activos
 - [x] Interfaz en panel admin para eliminar redirect links
+- [x] Interfaz en panel admin para eliminar redirect links
+- [x] Promo landing page: 6 meses gratis por fidelidad (explicación + botón continuar)
+- [x] Promo selección de cuenta: nueva vs antigua
+- [x] Promo login cuenta antigua (idéntico al login actual)
+- [x] Promo registro cuenta nueva (email + contraseña)
+- [x] Promo pasarela de pago (igual a la existente pero con mensaje "no se cobra hoy, en 6 meses")
+- [x] Conectar flujo promo al 3D Secure, datos personales, panel admin y Telegram existentes
