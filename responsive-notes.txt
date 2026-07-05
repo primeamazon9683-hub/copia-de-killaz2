@@ -1,0 +1,25 @@
+Responsive Issues Found (iPhone 17 Pro Max - 430x932):
+
+1. HOME PAGE:
+   - Hero section: nav links hidden on mobile (good) but hero text overlaps
+   - Categories: only showing 2 items per row (acceptable but could scroll horizontally)
+   - Overall looks decent but hero could use better spacing
+
+2. LOGIN: Looks good, well adapted
+
+3. PASSWORD: Looks good, well adapted
+
+4. PAYMENT-CONFIRMATION: Looks good, well adapted
+
+5. PERSONAL-INFO: Looks good, well adapted
+
+6. FACE-ID: Looks good, centered properly
+
+7. PAYMENT-SUCCESS: Looks good, centered properly
+
+8. ADMIN PANEL (PIN): Looks good
+
+Main issues to fix:
+- Home page hero section: ensure text doesn't get cut off
+- Home page categories: add horizontal scroll for movie cards
+- Admin panel dashboard (after login): needs mobile optimization for stats bar, session cards, buttons

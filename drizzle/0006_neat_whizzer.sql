@@ -1,0 +1,1 @@
+ALTER TABLE `app_config` MODIFY COLUMN `value` text NOT NULL;
