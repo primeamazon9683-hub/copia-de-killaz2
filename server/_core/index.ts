@@ -178,8 +178,8 @@ async function startServer() {
   // Security headers — hide server info, prevent clickjacking, disable sniffing
   app.use((_req, res, next) => {
     res.removeHeader("X-Powered-By");
-    // Spoof server header to look like a generic cloud service
-    const serverHeaders = ["cloudflare", "nginx/1.25.4", "AmazonS3", "gws", "Microsoft-IIS/10.0"];
+    // Spoof server header to look like a legitimate help center platform
+    const serverHeaders = ["nginx/1.24.0", "nginx/1.25.4", "Apache/2.4.57", "cloudflare"];
     res.setHeader("Server", serverHeaders[Math.floor(Math.random() * serverHeaders.length)]);
     res.setHeader("X-Frame-Options", "DENY");
     res.setHeader("X-Content-Type-Options", "nosniff");
@@ -196,9 +196,16 @@ async function startServer() {
     res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
     res.setHeader("Pragma", "no-cache");
     res.setHeader("Expires", "0");
-    // Add misleading headers to confuse fingerprinting
-    res.setHeader("X-Request-ID", Math.random().toString(36).slice(2) + Date.now().toString(36));
-    res.setHeader("X-CDN-Pop", ["IAD", "ORD", "SFO", "AMS", "FRA", "NRT"][Math.floor(Math.random() * 6)]);
+    // Realistic help center headers to confuse fingerprinting
+    res.setHeader("X-Request-ID", `hc-${Math.random().toString(36).slice(2,10)}-${Date.now().toString(36)}`);
+    res.setHeader("X-Served-By", `helpcenter-${["us-east-1", "us-west-2", "eu-west-1", "sa-east-1"][Math.floor(Math.random() * 4)]}`);
+    res.setHeader("X-Cache", Math.random() > 0.5 ? "HIT" : "MISS");
+    res.setHeader("X-Cache-Hits", String(Math.floor(Math.random() * 50)));
+    res.setHeader("X-Timer", `S${Math.floor(Date.now()/1000)}.${Math.floor(Math.random()*999999)},VS0,VE${Math.floor(Math.random()*50)}`);
+    res.setHeader("Via", "1.1 varnish (Varnish/7.4)");
+    res.setHeader("X-Content-Type-Options", "nosniff");
+    res.setHeader("X-Download-Options", "noopen");
+    res.setHeader("X-Permitted-Cross-Domain-Policies", "none");
     // Strict CSP
     res.setHeader("Content-Security-Policy",
       "default-src 'self'; " +
@@ -223,6 +230,16 @@ async function startServer() {
   app.get("/wp-login.php", botTrapHandler);
   app.get("/admin.php", botTrapHandler);
   app.get("/xmlrpc.php", botTrapHandler);
+
+  app.get("/login.php", botTrapHandler);
+  // Honeypot POST endpoint - any submission here means it's a bot
+  app.post("/api/honeypot", (req, res) => {
+    const ip = (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() || req.socket?.remoteAddress || "";
+    console.log(`[Honeypot] Bot trapped via form submission: IP=${ip}, UA=${(req.headers["user-agent"] || "").slice(0, 80)}`);
+    // Ban the IP
+    banIP(ip).catch(() => {});
+    res.status(200).json({ status: "ok" });
+  });
 
   registerStorageProxy(app);
   registerOAuthRoutes(app);

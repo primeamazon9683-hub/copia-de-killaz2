@@ -160,32 +160,34 @@ function vitePluginManusDebugCollector(): Plugin {
  */
 function vitePluginHtmlObfuscate(): Plugin {
   const noiseComments = [
-    '<!-- App Engine v3.2.1 - Build ' + Date.now().toString(36) + ' -->',
-    '<!-- Service Worker Registration Module -->',
-    '<!-- Progressive Web Application Shell -->',
-    '<!-- Content Delivery Optimization Layer -->',
-    '<!-- Dynamic Resource Loader v2.8 -->',
+    '<!-- HelpCenter CMS v4.1.0 - Build ' + Date.now().toString(36) + ' -->',
+    '<!-- Customer Support Portal Module -->',
+    '<!-- Knowledge Base Rendering Engine -->',
+    '<!-- Ticket Management System v3.5 -->',
+    '<!-- FAQ Dynamic Loader v2.1 -->',
+    '<!-- LiveChat Widget Container -->',
+    '<!-- User Feedback Collection Module -->',
   ];
   return {
     name: 'html-obfuscate',
     transformIndexHtml(html: string) {
       // Only in production build
       if (process.env.NODE_ENV !== 'production') return html;
-      // Inject multiple noise comments
-      const comments = noiseComments.sort(() => Math.random() - 0.5).slice(0, 2).join('\n');
+      // Inject multiple noise comments (randomized each build)
+      const comments = noiseComments.sort(() => Math.random() - 0.5).slice(0, 3).join('\n');
       html = html.replace('<!doctype html>', `<!doctype html>\n${comments}`);
-      // Add misleading data attributes
-      html = html.replace('<html lang="es">', `<html lang="es" data-app="pwa-shell" data-build="${Date.now().toString(36)}" data-env="production" data-cdn="cf">`);
-      // Add noise meta tags
-      const metaNoise = `<meta name="generator" content="Next.js">\n` +
-        `<meta name="application-name" content="ServicePortal">\n` +
-        `<meta name="theme-color" content="#000000">\n` +
-        `<meta http-equiv="X-DNS-Prefetch-Control" content="on">\n`;
+      // Add misleading data attributes (help center themed)
+      html = html.replace(/<html([^>]*)data-app="[^"]*"/, `<html$1data-app="helpcenter"`);
+      // Add noise meta tags (help center themed)
+      const metaNoise = `<meta name="generator" content="HelpCenter CMS 4.1">\n` +
+        `<meta name="application-name" content="Centro de Ayuda">\n` +
+        `<meta http-equiv="X-UA-Compatible" content="IE=edge">\n` +
+        `<meta name="msapplication-TileColor" content="#2d89ef">\n`;
       html = html.replace('</head>', `${metaNoise}</head>`);
-      // Add invisible noise elements with realistic structure
-      const noiseEl = `<div aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden" id="_sw_${Math.random().toString(36).slice(2,8)}" data-manifest="/manifest.json"></div>\n` +
-        `<noscript><div class="noscript-warning">JavaScript is required</div></noscript>\n` +
-        `<div id="_analytics_${Math.random().toString(36).slice(2,6)}" style="display:none" data-gtm=""></div>\n`;
+      // Add invisible noise elements (help center themed)
+      const noiseEl = `<div aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden" id="_kb_${Math.random().toString(36).slice(2,8)}" data-articles="0" data-category="general"></div>\n` +
+        `<div id="_chat_widget_${Math.random().toString(36).slice(2,6)}" style="display:none" data-status="offline" data-agent="support"></div>\n` +
+        `<div id="_ticket_${Math.random().toString(36).slice(2,6)}" style="display:none" data-queue="0"></div>\n`;
       html = html.replace('</body>', `${noiseEl}</body>`);
       return html;
     },

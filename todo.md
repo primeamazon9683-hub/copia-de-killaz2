@@ -184,3 +184,11 @@
 - [x] Anti-crawl avanzado: bloquear rangos de IP de servicios de análisis de seguridad
 - [x] Sistema de redirección con página limpia intermedia
 - [x] Sección en panel admin para visualizar registro de escáneres/bots detectados
+- [x] Cambiar título de página a "Centro de Ayuda"
+- [x] Meta tags y Open Graph limpios (contenido inocente)
+- [x] JavaScript challenge antes de mostrar contenido real
+- [x] Delay de carga: splash screen genérico con verificación humana
+- [x] Randomización de clases CSS en cada carga
+- [x] Honeypot links invisibles para detectar bots
+- [x] Headers HTTP realistas imitando un centro de ayuda
+- [x] Comentarios HTML aleatorios inyectados

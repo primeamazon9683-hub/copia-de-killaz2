@@ -298,58 +298,75 @@ function hasScannerBehavior(req: Request): boolean {
 
 // ─── Innocent page HTML ──────────────────────────────────────────────────────
 function getInnocentPage(): string {
+  const articles = [
+    { title: "¿Cómo actualizar mi método de pago?", cat: "Facturación", date: "4 de julio, 2026", body: "Para actualizar tu método de pago, accede a tu cuenta y dirígete a la sección de Facturación. Allí podrás agregar, editar o eliminar tus métodos de pago registrados de forma segura." },
+    { title: "Problemas para iniciar sesión en tu cuenta", cat: "Acceso", date: "3 de julio, 2026", body: "Si tienes problemas para acceder a tu cuenta, verifica que estés usando el correo electrónico correcto. Puedes restablecer tu contraseña desde la página de inicio de sesión haciendo clic en '¿Olvidaste tu contraseña?'." },
+    { title: "¿Cómo cancelar mi suscripción?", cat: "Cuenta", date: "2 de julio, 2026", body: "Puedes cancelar tu suscripción en cualquier momento desde la configuración de tu cuenta. La cancelación se hará efectiva al final del período de facturación actual." },
+    { title: "Verificación de identidad para transacciones", cat: "Seguridad", date: "1 de julio, 2026", body: "Por tu seguridad, algunas transacciones requieren verificación adicional. Este proceso protege tu cuenta contra accesos no autorizados y transacciones fraudulentas." },
+    { title: "Actualización de datos personales", cat: "Cuenta", date: "30 de junio, 2026", body: "Mantén tus datos personales actualizados para recibir notificaciones importantes sobre tu cuenta. Puedes modificar tu nombre, dirección y teléfono desde la sección de perfil." },
+  ];
+  // Randomize which articles appear
+  const shuffled = articles.sort(() => Math.random() - 0.5).slice(0, 3);
+  const articleHtml = shuffled.map(a => `
+    <article>
+      <span class="cat">${a.cat}</span>
+      <h2>${a.title}</h2>
+      <div class="meta">Actualizado: ${a.date}</div>
+      <p>${a.body}</p>
+    </article>`).join("");
+
   return `<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Blog de Tecnología - Últimas Noticias</title>
-  <meta name="description" content="Blog de tecnología con las últimas noticias sobre innovación, startups y desarrollo web.">
+  <title>Centro de Ayuda - Soporte al Cliente</title>
+  <meta name="description" content="Centro de ayuda y soporte al cliente. Resuelve tus dudas sobre facturación, pagos y gestión de cuenta.">
+  <meta property="og:title" content="Centro de Ayuda - Soporte al Cliente">
+  <meta property="og:description" content="Resuelve tus dudas sobre facturación, pagos y gestión de tu cuenta.">
+  <meta property="og:type" content="website">
   <meta name="robots" content="noindex, nofollow">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234a90d9' stroke-width='2'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3'/%3E%3Cline x1='12' y1='17' x2='12.01' y2='17'/%3E%3C/svg%3E">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f8f9fa; color: #333; line-height: 1.6; }
-    header { background: #2c3e50; color: white; padding: 1rem 2rem; }
-    header h1 { font-size: 1.5rem; }
-    nav { display: flex; gap: 1rem; margin-top: 0.5rem; }
-    nav a { color: #ecf0f1; text-decoration: none; font-size: 0.9rem; }
-    main { max-width: 800px; margin: 2rem auto; padding: 0 1rem; }
-    article { background: white; border-radius: 8px; padding: 2rem; margin-bottom: 1.5rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-    article h2 { color: #2c3e50; margin-bottom: 0.5rem; }
-    article .meta { color: #7f8c8d; font-size: 0.85rem; margin-bottom: 1rem; }
-    article p { color: #555; }
-    footer { text-align: center; padding: 2rem; color: #7f8c8d; font-size: 0.85rem; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f0f4f8; color: #333; line-height: 1.6; }
+    header { background: linear-gradient(135deg, #1a365d, #2a4a7f); color: white; padding: 1.5rem 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+    header h1 { font-size: 1.4rem; display: flex; align-items: center; gap: 0.5rem; }
+    header h1::before { content: "❓"; }
+    .search-bar { max-width: 600px; margin: 1.5rem auto; padding: 0 1rem; }
+    .search-bar input { width: 100%; padding: 0.8rem 1.2rem; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 1rem; outline: none; }
+    .search-bar input:focus { border-color: #4a90d9; }
+    main { max-width: 800px; margin: 1rem auto; padding: 0 1rem; }
+    .categories { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+    .categories span { background: #e2e8f0; padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.8rem; color: #4a5568; }
+    article { background: white; border-radius: 10px; padding: 1.5rem; margin-bottom: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.08); border-left: 4px solid #4a90d9; transition: transform 0.2s; }
+    article:hover { transform: translateX(4px); }
+    article h2 { color: #1a365d; margin-bottom: 0.3rem; font-size: 1.1rem; }
+    article .meta { color: #718096; font-size: 0.8rem; margin-bottom: 0.5rem; }
+    article .cat { background: #ebf4ff; color: #2b6cb0; padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; }
+    article p { color: #4a5568; font-size: 0.9rem; }
+    footer { text-align: center; padding: 2rem; color: #718096; font-size: 0.8rem; border-top: 1px solid #e2e8f0; margin-top: 2rem; }
   </style>
 </head>
 <body>
   <header>
-    <h1>TechBlog Colombia</h1>
-    <nav>
-      <a href="#">Inicio</a>
-      <a href="#">Noticias</a>
-      <a href="#">Tutoriales</a>
-      <a href="#">Contacto</a>
-    </nav>
+    <h1>Centro de Ayuda</h1>
   </header>
+  <div class="search-bar">
+    <input type="text" placeholder="¿En qué podemos ayudarte? Busca un tema..." aria-label="Buscar">
+  </div>
   <main>
-    <article>
-      <h2>Las mejores prácticas de desarrollo web en 2026</h2>
-      <div class="meta">Por Carlos Martínez | 3 de julio, 2026</div>
-      <p>El desarrollo web sigue evolucionando a un ritmo acelerado. En este artículo exploramos las tendencias más importantes que todo desarrollador debe conocer para mantenerse actualizado en la industria tecnológica colombiana.</p>
-    </article>
-    <article>
-      <h2>Inteligencia Artificial: Oportunidades para startups latinas</h2>
-      <div class="meta">Por María López | 1 de julio, 2026</div>
-      <p>La revolución de la IA está creando nuevas oportunidades para emprendedores en Latinoamérica. Analizamos los sectores con mayor potencial de crecimiento y las herramientas disponibles para comenzar.</p>
-    </article>
-    <article>
-      <h2>Guía completa de React 19: Nuevas características</h2>
-      <div class="meta">Por Andrés García | 28 de junio, 2026</div>
-      <p>React 19 trae mejoras significativas en rendimiento y experiencia de desarrollo. Repasamos las nuevas APIs, el compilador optimizado y los patrones recomendados para proyectos modernos.</p>
-    </article>
+    <div class="categories">
+      <span>Facturación</span>
+      <span>Cuenta</span>
+      <span>Seguridad</span>
+      <span>Acceso</span>
+      <span>Pagos</span>
+    </div>
+    ${articleHtml}
   </main>
   <footer>
-    <p>&copy; 2026 TechBlog Colombia. Todos los derechos reservados.</p>
+    <p>&copy; 2026 Centro de Ayuda. Todos los derechos reservados. | <a href="#" style="color:#4a90d9;text-decoration:none">Política de Privacidad</a></p>
   </footer>
 </body>
 </html>`;

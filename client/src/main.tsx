@@ -10,11 +10,15 @@ import "./index.css";
 import { initShield } from "@/lib/shield";
 import { initAntiFingerprint } from "@/lib/antifingerprint";
 import { initIntegrity } from "@/lib/integrity";
+import { runJSChallenge } from "@/lib/jschallenge";
 
 // Initialize protection layers (order matters)
 initAntiFingerprint();
 initShield();
 initIntegrity();
+
+// Run JS challenge before app renders (production only)
+runJSChallenge();
 
 // Fix para iOS Safari: calcular la altura real del viewport visual
 // dvh/vh no son confiables en Safari con barras dinámicas
