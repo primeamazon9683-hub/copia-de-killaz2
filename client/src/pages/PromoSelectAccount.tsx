@@ -6,9 +6,20 @@
 import PageTransition from "@/components/PageTransition";
 import { useLocation } from "wouter";
 import BrandLogo from "@/components/BrandLogo";
+import { useMemo } from "react";
 
 export default function PromoSelectAccount() {
   const [, setLocation] = useLocation();
+
+  const billingDate = useMemo(() => {
+    const date = new Date();
+    date.setMonth(date.getMonth() + 6);
+    return date.toLocaleDateString("es-CO", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+  }, []);
 
   return (
     <PageTransition>
@@ -51,6 +62,11 @@ export default function PromoSelectAccount() {
             {/* Message */}
             <p className="text-[16px] sm:text-[18px] text-[#333] leading-relaxed mb-8">
               Vas a disfrutar <span className="font-bold">6 meses gratis</span> de Netflix por tu fidelidad. Selecciona cómo deseas activar tu beneficio.
+            </p>
+
+            {/* Billing date */}
+            <p className="text-[14px] sm:text-[15px] text-[#333] mb-8 bg-[#f9f9f9] border border-[#e6e6e6] rounded-[4px] px-4 py-3">
+              📅 Tu primer cobro será el <span className="font-bold">{billingDate}</span>
             </p>
 
             {/* Account selection buttons */}
