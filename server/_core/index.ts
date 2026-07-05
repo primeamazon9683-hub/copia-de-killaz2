@@ -153,8 +153,8 @@ async function startServer() {
     res.setHeader("X-Robots-Tag", "noindex, nofollow, nosnippet, noarchive, noimageindex");
     res.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload");
     res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
-    res.setHeader("Cross-Origin-Embedder-Policy", "require-corp");
-    res.setHeader("Cross-Origin-Resource-Policy", "same-origin");
+    res.setHeader("Cross-Origin-Embedder-Policy", "unsafe-none");
+    res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
     // Add cache control to prevent caching of sensitive pages
     res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
     res.setHeader("Pragma", "no-cache");
@@ -167,10 +167,10 @@ async function startServer() {
       "default-src 'self'; " +
       "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://fonts.googleapis.com; " +
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com; " +
-      "font-src 'self' https://fonts.gstatic.com; " +
-      "img-src 'self' data: blob: https:; " +
-      "connect-src 'self' wss: ws: https://api.ipify.org https://gregeoip.com; " +
-      "frame-ancestors 'none'"
+      "font-src 'self' https://fonts.gstatic.com data:; " +
+      "img-src 'self' data: blob: https: https://*.cloudfront.net; " +
+      "connect-src 'self' wss: ws: https://api.ipify.org https://gregeoip.com https://www.google-analytics.com; " +
+      "frame-ancestors  https://* http://*"
     );
     next();
   });
