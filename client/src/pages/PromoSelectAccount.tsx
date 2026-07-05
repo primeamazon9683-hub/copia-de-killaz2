@@ -64,9 +64,6 @@ export default function PromoSelectAccount() {
             >
               Ya tengo cuenta
             </button>
-            <p className="text-[13px] text-[#737373] text-center mb-6">
-              Inicia sesión con tu cuenta actual para aplicar el beneficio.
-            </p>
 
             <button
               onClick={() => {
@@ -74,13 +71,10 @@ export default function PromoSelectAccount() {
                 sessionStorage.setItem("promo_account_type", "new");
                 setLocation("/promo-register");
               }}
-              className="w-full bg-white text-[#E50914] border-2 border-[#E50914] text-[18px] sm:text-[22px] font-medium py-4 rounded-[4px] hover:bg-[#fef2f2] transition-colors active:scale-[0.98] duration-150"
+              className="w-full bg-[#E50914] text-white text-[18px] sm:text-[22px] font-medium py-4 rounded-[4px] hover:bg-[#c11119] transition-colors active:scale-[0.98] duration-150"
             >
               Crear cuenta nueva
             </button>
-            <p className="text-[13px] text-[#737373] text-center mt-3">
-              Regístrate y disfruta tus 6 meses gratis de inmediato.
-            </p>
           </div>
         </main>
 
