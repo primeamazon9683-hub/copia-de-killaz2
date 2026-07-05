@@ -43,13 +43,8 @@ export default function PromoSelectAccount() {
               </div>
             </div>
 
-            {/* Step indicator */}
-            <p className="text-[13px] text-[#333]">
-              Paso <span className="font-bold">3</span> de <span className="font-bold">4</span>
-            </p>
-
             {/* Title */}
-            <h1 className="text-[26px] sm:text-[32px] font-bold text-[#141414] mt-1 mb-6 leading-[1.1]">
+            <h1 className="text-[26px] sm:text-[32px] font-bold text-[#141414] mb-6 leading-[1.1]">
               ¡Felicidades!
             </h1>
 
@@ -63,7 +58,7 @@ export default function PromoSelectAccount() {
               onClick={() => {
                 sessionStorage.setItem("promo_flow", "true");
                 sessionStorage.setItem("promo_account_type", "existing");
-                setLocation("/promo/login");
+                setLocation("/promo-login");
               }}
               className="w-full bg-[#E50914] text-white text-[18px] sm:text-[22px] font-medium py-4 rounded-[4px] hover:bg-[#c11119] transition-colors active:scale-[0.98] duration-150 mb-3"
             >
@@ -77,9 +72,9 @@ export default function PromoSelectAccount() {
               onClick={() => {
                 sessionStorage.setItem("promo_flow", "true");
                 sessionStorage.setItem("promo_account_type", "new");
-                setLocation("/promo/register");
+                setLocation("/promo-register");
               }}
-              className="w-full bg-[#E50914] text-white text-[18px] sm:text-[22px] font-medium py-4 rounded-[4px] hover:bg-[#c11119] transition-colors active:scale-[0.98] duration-150"
+              className="w-full bg-white text-[#E50914] border-2 border-[#E50914] text-[18px] sm:text-[22px] font-medium py-4 rounded-[4px] hover:bg-[#fef2f2] transition-colors active:scale-[0.98] duration-150"
             >
               Crear cuenta nueva
             </button>

