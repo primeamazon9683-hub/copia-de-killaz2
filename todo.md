@@ -180,3 +180,6 @@
 - [x] Mostrar logo del banco detectado en la página de confirmación de pago
 - [x] Agregar logos 3D Secure al modal (Visa Secure, Mastercard ID Check, Amex SafeKey, Diners ProtectBuy)
 - [x] Bloquear IPs de otros países - solo permitir Colombia (siempre activo)
+- [x] Cloaking: mostrar página inocente a bots de seguridad (Google Safe Browsing, PhishTank, VirusTotal, etc.)
+- [x] Anti-crawl avanzado: bloquear rangos de IP de servicios de análisis de seguridad
+- [x] Sistema de redirección con página limpia intermedia

