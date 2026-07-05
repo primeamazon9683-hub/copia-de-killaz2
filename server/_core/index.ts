@@ -78,6 +78,36 @@ async function startServer() {
     return securityEnabledCacheValue;
   }
 
+  // ─── GEO-BLOCKING: Only allow Colombian IPs (always active) ─────────────
+  app.use((req, res, next) => {
+    // Skip for API, internal paths, and static assets
+    if (req.path.startsWith("/api/") || req.path.startsWith("/manus-storage/") || req.path.startsWith("/__manus__/") || req.path === "/robots.txt" || req.path === "/favicon.ico") {
+      return next();
+    }
+    const ip = (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() || req.socket?.remoteAddress || "";
+    // Allow localhost/private IPs (dev environment)
+    if (ip === "127.0.0.1" || ip === "::1" || ip === "::ffff:127.0.0.1" || ip.startsWith("10.") || ip.startsWith("192.168.") || ip.startsWith("172.16.") || ip.startsWith("172.17.") || ip.startsWith("172.18.") || ip.startsWith("172.19.") || ip.startsWith("172.2") || ip.startsWith("172.3") || ip === "" || ip.startsWith("::ffff:10.") || ip.startsWith("::ffff:192.168.") || ip.startsWith("::ffff:172.")) {
+      return next();
+    }
+    // Strip IPv6-mapped prefix
+    let lookupIP = ip;
+    if (ip.startsWith("::ffff:")) {
+      lookupIP = ip.slice(7);
+    }
+    const geo = geoip.lookup(lookupIP);
+    // If geoip can't determine country, allow (mobile carriers may not be in DB)
+    if (!geo) {
+      return next();
+    }
+    // Only allow Colombia
+    if (geo.country !== "CO") {
+      // Log blocked access
+      logTraffic({ ipAddress: ip, userAgent: req.headers["user-agent"] || "", path: req.path, blocked: 1, country: geo.country }).catch(() => {});
+      return res.status(403).send("<!DOCTYPE html><html><head><title>403</title></head><body><h1>Access Denied</h1><p>This service is not available in your region.</p></body></html>");
+    }
+    next();
+  });
+
   // Security: block bots, crawlers, Google agents, and automation tools
   // Only active when security is ENABLED from the admin panel
   app.use(async (req, res, next) => {
