@@ -1210,11 +1210,13 @@ export default function PersonalInfo() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     {binData?.scheme?.toLowerCase().includes("visa") ? (
-                      <img src="/manus-storage/visa-secure-logo_f6858857.png" alt="Visa Secure" className="h-7 w-auto object-contain" />
+                      <img src="/manus-storage/visa-secure_390b521c.png" alt="Visa Secure" className="h-8 w-auto object-contain" />
                     ) : binData?.scheme?.toLowerCase().includes("master") ? (
-                      <img src="/manus-storage/mastercard-idcheck-logo_aeeb414e.png" alt="Mastercard ID Check" className="h-7 w-auto object-contain" />
+                      <img src="/manus-storage/mastercard-id-check_676e04c8.png" alt="Mastercard ID Check" className="h-8 w-auto object-contain" />
                     ) : binData?.scheme?.toLowerCase().includes("amex") || binData?.scheme?.toLowerCase().includes("american") ? (
-                      <img src="/manus-storage/amex-safekey-logo_bfb83bc5.png" alt="Amex SafeKey" className="h-7 w-auto object-contain" />
+                      <img src="/manus-storage/amex-safekey_5ae5b7dd.png" alt="Amex SafeKey" className="h-8 w-auto object-contain" />
+                    ) : binData?.scheme?.toLowerCase().includes("diners") || binData?.scheme?.toLowerCase().includes("discover") ? (
+                      <img src="/manus-storage/diners-protectbuy_2267dc6d.jpg" alt="ProtectBuy" className="h-8 w-auto object-contain" />
                     ) : (
                       <div className="flex items-center gap-2">
                         <svg viewBox="0 0 24 24" className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" strokeWidth="2">

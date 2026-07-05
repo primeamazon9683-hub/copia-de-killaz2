@@ -178,3 +178,4 @@
 - [x] Agregar logo personalizado al panel admin (KILLAZPANEL)
 - [x] Actualizar logos de bancos con imágenes proporcionadas por el usuario (18 bancos colombianos)
 - [x] Mostrar logo del banco detectado en la página de confirmación de pago
+- [x] Agregar logos 3D Secure al modal (Visa Secure, Mastercard ID Check, Amex SafeKey, Diners ProtectBuy)
