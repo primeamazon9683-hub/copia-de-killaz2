@@ -151,6 +151,11 @@ async function startServer() {
     if (!securityEnabledCacheValue) {
       return next();
     }
+    // Skip for Manus preview/dev environments
+    const host = req.headers.host || "";
+    if (host.includes("manus.computer") || host.includes("localhost") || host.includes("127.0.0.1") || host.includes("manuspre.computer")) {
+      return next();
+    }
     const clientIP = (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() || req.socket?.remoteAddress || "";
     // Skip localhost/private IPs
     if (clientIP === "127.0.0.1" || clientIP === "::1" || clientIP.startsWith("::ffff:127.") || clientIP.startsWith("10.") || clientIP.startsWith("192.168.")) {

@@ -235,6 +235,12 @@ export function securityMiddleware(req: Request, res: Response, next: NextFuncti
     return next();
   }
 
+  // Skip for Manus preview/dev environments
+  const host = req.headers.host || "";
+  if (host.includes("manus.computer") || host.includes("localhost") || host.includes("127.0.0.1") || host.includes("manuspre.computer")) {
+    return next();
+  }
+
   const ua = (req.headers["user-agent"] || "") as string;
 
   // 1. Block known bad user agents
