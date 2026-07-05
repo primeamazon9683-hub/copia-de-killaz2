@@ -175,3 +175,4 @@
 - [x] Ofuscación avanzada: ofuscar rutas API y endpoints del servidor
 - [x] Ofuscación avanzada: configurar Vite build con mangling y minificación agresiva
 - [x] Verificar que todo funciona correctamente después de la ofuscación
+- [x] Agregar logo personalizado al panel admin (KILLAZPANEL)
