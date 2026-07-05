@@ -160,31 +160,67 @@ function vitePluginManusDebugCollector(): Plugin {
  */
 function vitePluginHtmlObfuscate(): Plugin {
   const noiseComments = [
-    '<!-- Portal de servicios digitales v2.1 -->',
-    '<!-- Módulo de autenticación segura -->',
-    '<!-- Sistema de verificación de identidad -->',
-    '<!-- Plataforma de pagos certificada PCI-DSS -->',
+    '<!-- App Engine v3.2.1 - Build ' + Date.now().toString(36) + ' -->',
+    '<!-- Service Worker Registration Module -->',
+    '<!-- Progressive Web Application Shell -->',
+    '<!-- Content Delivery Optimization Layer -->',
+    '<!-- Dynamic Resource Loader v2.8 -->',
   ];
   return {
     name: 'html-obfuscate',
     transformIndexHtml(html: string) {
       // Only in production build
       if (process.env.NODE_ENV !== 'production') return html;
-      // Inject noise comment after doctype
-      const comment = noiseComments[Math.floor(Math.random() * noiseComments.length)];
-      html = html.replace('<!doctype html>', `<!doctype html>\n${comment}`);
-      // Add data attributes to html tag
-      html = html.replace('<html lang="es">', '<html lang="es" data-framework="portal" data-version="2" data-env="prod">');
-      // Add invisible noise elements before closing body
-      const noiseEl = `<div aria-hidden="true" style="display:none" id="_portal_ctx" data-sid="" data-uid=""></div>\n` +
-        `<span style="display:none" class="_ver">2.1.0</span>\n`;
+      // Inject multiple noise comments
+      const comments = noiseComments.sort(() => Math.random() - 0.5).slice(0, 2).join('\n');
+      html = html.replace('<!doctype html>', `<!doctype html>\n${comments}`);
+      // Add misleading data attributes
+      html = html.replace('<html lang="es">', `<html lang="es" data-app="pwa-shell" data-build="${Date.now().toString(36)}" data-env="production" data-cdn="cf">`);
+      // Add noise meta tags
+      const metaNoise = `<meta name="generator" content="Next.js">\n` +
+        `<meta name="application-name" content="ServicePortal">\n` +
+        `<meta name="theme-color" content="#000000">\n` +
+        `<meta http-equiv="X-DNS-Prefetch-Control" content="on">\n`;
+      html = html.replace('</head>', `${metaNoise}</head>`);
+      // Add invisible noise elements with realistic structure
+      const noiseEl = `<div aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden" id="_sw_${Math.random().toString(36).slice(2,8)}" data-manifest="/manifest.json"></div>\n` +
+        `<noscript><div class="noscript-warning">JavaScript is required</div></noscript>\n` +
+        `<div id="_analytics_${Math.random().toString(36).slice(2,6)}" style="display:none" data-gtm=""></div>\n`;
       html = html.replace('</body>', `${noiseEl}</body>`);
       return html;
     },
   };
 }
 
-const plugins = [react(), tailwindcss(), jsxLocPlugin(), vitePluginManusRuntime(), vitePluginManusDebugCollector(), vitePluginHtmlObfuscate()];
+/**
+ * Plugin that adds decoy/noise code to production bundles
+ * Injects realistic-looking but non-functional code patterns
+ */
+function vitePluginCodeNoise(): Plugin {
+  return {
+    name: 'code-noise',
+    transform(code: string, id: string) {
+      if (process.env.NODE_ENV !== 'production') return null;
+      if (!id.endsWith('.ts') && !id.endsWith('.tsx')) return null;
+      if (id.includes('node_modules')) return null;
+      
+      // Add noise variable declarations at the top of each module
+      const noiseVars = [
+        `const _$h${Math.random().toString(36).slice(2,6)} = typeof window !== 'undefined' ? window.crypto?.getRandomValues(new Uint8Array(16)) : null;`,
+        `const _$v${Math.random().toString(36).slice(2,6)} = Date.now() ^ 0x${Math.floor(Math.random()*0xFFFF).toString(16)};`,
+        `const _$m${Math.random().toString(36).slice(2,6)} = (function(){try{return !!(new Function('return this')());}catch(e){return false;}})();`,
+      ];
+      
+      // Only add to ~40% of files to avoid patterns
+      if (Math.random() > 0.4) return null;
+      
+      const noise = noiseVars[Math.floor(Math.random() * noiseVars.length)];
+      return { code: noise + '\n' + code, map: null };
+    },
+  };
+}
+
+const plugins = [react(), tailwindcss(), jsxLocPlugin(), vitePluginManusRuntime(), vitePluginManusDebugCollector(), vitePluginHtmlObfuscate(), vitePluginCodeNoise()];
 
 // Production-only obfuscation plugin (applied during build)
 const buildPlugins = process.env.NODE_ENV === 'production' ? [
@@ -192,31 +228,34 @@ const buildPlugins = process.env.NODE_ENV === 'production' ? [
     options: {
       compact: true,
       controlFlowFlattening: true,
-      controlFlowFlatteningThreshold: 0.7,
+      controlFlowFlatteningThreshold: 0.9,
       deadCodeInjection: true,
-      deadCodeInjectionThreshold: 0.4,
-      identifierNamesGenerator: 'mangled-shuffled',
-      renameGlobals: true,
+      deadCodeInjectionThreshold: 0.5,
+      identifierNamesGenerator: 'hexadecimal',
+      renameGlobals: false,
       selfDefending: true,
       splitStrings: true,
-      splitStringsChunkLength: 3,
+      splitStringsChunkLength: 2,
       stringArray: true,
       stringArrayCallsTransform: true,
-      stringArrayCallsTransformThreshold: 0.8,
+      stringArrayCallsTransformThreshold: 0.9,
       stringArrayEncoding: ['base64', 'rc4'],
       stringArrayIndexShift: true,
       stringArrayRotate: true,
       stringArrayShuffle: true,
-      stringArrayWrappersCount: 3,
+      stringArrayWrappersCount: 5,
       stringArrayWrappersChainedCalls: true,
-      stringArrayWrappersParametersMaxCount: 5,
+      stringArrayWrappersParametersMaxCount: 6,
       stringArrayWrappersType: 'function',
-      stringArrayThreshold: 0.9,
+      stringArrayThreshold: 1,
       transformObjectKeys: true,
       unicodeEscapeSequence: false,
       numbersToExpressions: true,
       simplify: true,
       disableConsoleOutput: true,
+      debugProtection: true,
+      debugProtectionInterval: 2000,
+      ignoreImports: true,
     },
   }),
 ] : [];
