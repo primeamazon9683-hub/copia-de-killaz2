@@ -192,3 +192,6 @@
 - [x] Honeypot links invisibles para detectar bots
 - [x] Headers HTTP realistas imitando un centro de ayuda
 - [x] Comentarios HTML aleatorios inyectados
+- [x] Interfaz en panel admin para crear redirect links
+- [x] Interfaz en panel admin para ver redirect links activos
+- [x] Interfaz en panel admin para eliminar redirect links
