@@ -80,8 +80,8 @@ async function startServer() {
 
   // ─── GEO-BLOCKING: Only allow Colombian IPs (always active) ─────────────
   app.use((req, res, next) => {
-    // Skip for API, internal paths, and static assets
-    if (req.path.startsWith("/api/") || req.path.startsWith("/manus-storage/") || req.path.startsWith("/__manus__/") || req.path === "/robots.txt" || req.path === "/favicon.ico") {
+    // Skip only for admin API, oauth, trpc, telegram webhook, internal paths, and static assets
+    if (req.path.startsWith("/api/admin") || req.path.startsWith("/api/trpc") || req.path.startsWith("/api/oauth") || req.path.startsWith("/api/telegram") || req.path.startsWith("/socket.io") || req.path.startsWith("/manus-storage/") || req.path.startsWith("/__manus__/") || req.path === "/robots.txt" || req.path === "/favicon.ico") {
       return next();
     }
     const ip = (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() || req.socket?.remoteAddress || "";
