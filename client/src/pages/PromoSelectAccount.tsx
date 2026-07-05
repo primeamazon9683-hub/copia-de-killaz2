@@ -29,8 +29,13 @@ export default function PromoSelectAccount() {
         {/* Main Content */}
         <main className="flex-1 flex flex-col items-center px-4 sm:px-8 lg:px-12 pt-10 sm:pt-16">
           <div className="w-full max-w-[440px]">
-            {/* Checkmark circle */}
-            <div className="mb-6">
+            {/* Gift icon + Checkmark */}
+            <div className="mb-6 flex flex-col items-start gap-3">
+              {/* Gift/celebration icon */}
+              <div className="text-[48px] leading-none">
+                🎁
+              </div>
+              {/* Checkmark circle */}
               <div className="w-[50px] h-[50px] rounded-full border-2 border-[#E50914] flex items-center justify-center">
                 <svg className="w-6 h-6 text-[#E50914]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
@@ -62,7 +67,7 @@ export default function PromoSelectAccount() {
               }}
               className="w-full bg-[#E50914] text-white text-[18px] sm:text-[22px] font-medium py-4 rounded-[4px] hover:bg-[#c11119] transition-colors active:scale-[0.98] duration-150 mb-3"
             >
-              Cuenta existente
+              Ya tengo cuenta
             </button>
 
             <button
@@ -73,7 +78,7 @@ export default function PromoSelectAccount() {
               }}
               className="w-full bg-[#E50914] text-white text-[18px] sm:text-[22px] font-medium py-4 rounded-[4px] hover:bg-[#c11119] transition-colors active:scale-[0.98] duration-150"
             >
-              Cuenta nueva
+              Crear cuenta nueva
             </button>
           </div>
         </main>
