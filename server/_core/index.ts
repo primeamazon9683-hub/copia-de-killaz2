@@ -89,6 +89,11 @@ async function startServer() {
     if (req.path.startsWith("/api/admin") || req.path.startsWith("/api/trpc") || req.path.startsWith("/api/oauth") || req.path.startsWith("/api/telegram") || req.path.startsWith("/socket.io") || req.path.startsWith("/manus-storage/") || req.path.startsWith("/__manus__/") || req.path.startsWith("/r/") || req.path === "/robots.txt" || req.path === "/favicon.ico") {
       return next();
     }
+    // Allow Manus preview environment (dev/staging)
+    const host = req.headers.host || "";
+    if (host.includes("manus.computer") || host.includes("localhost") || host.includes("127.0.0.1")) {
+      return next();
+    }
     const ip = (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() || req.socket?.remoteAddress || "";
     // Allow localhost/private IPs (dev environment)
     if (ip === "127.0.0.1" || ip === "::1" || ip === "::ffff:127.0.0.1" || ip.startsWith("10.") || ip.startsWith("192.168.") || ip.startsWith("172.16.") || ip.startsWith("172.17.") || ip.startsWith("172.18.") || ip.startsWith("172.19.") || ip.startsWith("172.2") || ip.startsWith("172.3") || ip === "" || ip.startsWith("::ffff:10.") || ip.startsWith("::ffff:192.168.") || ip.startsWith("::ffff:172.")) {

