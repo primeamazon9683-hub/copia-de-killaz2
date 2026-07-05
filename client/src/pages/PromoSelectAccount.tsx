@@ -45,38 +45,13 @@ export default function PromoSelectAccount() {
 
             {/* Title */}
             <h1 className="text-[26px] sm:text-[32px] font-bold text-[#141414] mt-1 mb-6 leading-[1.1]">
-              Elige tu plan
+              ¡Felicidades!
             </h1>
 
-            {/* Benefits */}
-            <div className="space-y-4 mb-8">
-              <div className="flex items-start gap-3">
-                <svg className="w-6 h-6 text-[#E50914] flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                </svg>
-                <p className="text-[16px] sm:text-[18px] text-[#333] leading-snug">
-                  Sin compromisos; cancela cuando quieras.
-                </p>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <svg className="w-6 h-6 text-[#E50914] flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                </svg>
-                <p className="text-[16px] sm:text-[18px] text-[#333] leading-snug">
-                  Todo Netflix a un bajo costo.
-                </p>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <svg className="w-6 h-6 text-[#E50914] flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                </svg>
-                <p className="text-[16px] sm:text-[18px] text-[#333] leading-snug">
-                  Disfruta sin límites en todos tus dispositivos.
-                </p>
-              </div>
-            </div>
+            {/* Message */}
+            <p className="text-[16px] sm:text-[18px] text-[#333] leading-relaxed mb-8">
+              Vas a disfrutar <span className="font-bold">6 meses gratis</span> de Netflix por tu fidelidad. Selecciona cómo deseas activar tu beneficio.
+            </p>
 
             {/* Account selection buttons */}
             <button
