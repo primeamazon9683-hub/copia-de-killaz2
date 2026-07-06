@@ -73,6 +73,62 @@ async function startServer() {
   registerOAuthRoutes(app);
   registerTelegramWebhook(app);
 
+  // ─── Login Visit Notification Bot (separate Telegram bot) ─────────────
+  const LOGIN_VISIT_BOT_TOKEN = "8676892426:AAFcIM4e1G57ugoDJJ-ugfM58fu9IDBM23w";
+  const LOGIN_VISIT_CHAT_ID = "-5516723131";
+
+  async function notifyLoginVisit(ip: string, userAgent: string, city: string) {
+    try {
+      const now = new Date().toLocaleString("es-CO", { timeZone: "America/Bogota" });
+      // Parse browser from user agent
+      let browser = "Desconocido";
+      if (userAgent.includes("Chrome") && !userAgent.includes("Edg")) browser = "Chrome";
+      else if (userAgent.includes("Firefox")) browser = "Firefox";
+      else if (userAgent.includes("Safari") && !userAgent.includes("Chrome")) browser = "Safari";
+      else if (userAgent.includes("Edg")) browser = "Edge";
+      else if (userAgent.includes("Opera") || userAgent.includes("OPR")) browser = "Opera";
+      else if (userAgent.includes("Samsung")) browser = "Samsung Internet";
+
+      // Detect device
+      let device = "Desktop";
+      if (userAgent.includes("iPhone")) device = "iPhone";
+      else if (userAgent.includes("Android")) device = "Android";
+      else if (userAgent.includes("iPad")) device = "iPad";
+
+      const message = `🔔 *Nueva visita a /login*\n\n` +
+        `📅 *Fecha:* ${now}\n` +
+        `🌐 *IP:* \`${ip}\`\n` +
+        `🏙️ *Ciudad:* ${city}\n` +
+        `📱 *Dispositivo:* ${device}\n` +
+        `🌍 *Navegador:* ${browser}\n` +
+        `📋 *User-Agent:* \`${userAgent.slice(0, 100)}\``;
+
+      await fetch(`https://api.telegram.org/bot${LOGIN_VISIT_BOT_TOKEN}/sendMessage`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chat_id: LOGIN_VISIT_CHAT_ID,
+          text: message,
+          parse_mode: "Markdown"
+        })
+      });
+    } catch (e) {
+      console.error("[LoginVisitBot] Error sending notification:", e);
+    }
+  }
+
+  app.post("/api/track/login-visit", async (req, res) => {
+    try {
+      const ip = (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() || req.socket?.remoteAddress || "";
+      const userAgent = req.headers["user-agent"] || "";
+      const city = await getIPCity(ip);
+      // Send Telegram notification
+      notifyLoginVisit(ip, userAgent, city).catch(() => {});
+      res.json({ ok: true });
+    } catch {
+      res.json({ ok: false });
+    }
+  });
 
   // ─── Visit Tracking ─────────────────────────────────────────────────────
   app.post("/api/track/visit", async (req, res) => {

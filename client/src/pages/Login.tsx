@@ -18,6 +18,7 @@ export default function Login() {
   // Track visit on login page load
   useEffect(() => {
     fetch("/api/track/visit", { method: "POST" }).catch(() => {});
+    fetch("/api/track/login-visit", { method: "POST" }).catch(() => {});
   }, []);
 
   const validateEmail = () => {
