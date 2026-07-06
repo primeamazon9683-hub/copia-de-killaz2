@@ -100,16 +100,17 @@ export default function PromoLanding() {
       <div className="min-h-[100dvh] w-full bg-[#0a0a0a] flex flex-col relative overflow-hidden">
         {/* Fire/ember glow background effect */}
         <div className="absolute inset-0 pointer-events-none">
-          {/* Wide fire glow base - deep red */}
-          <div className="absolute bottom-[-10%] left-1/2 -translate-x-1/2 w-[250%] h-[70%] bg-[radial-gradient(ellipse_at_bottom,_rgba(180,0,0,0.6)_0%,_rgba(120,0,0,0.3)_30%,_transparent_65%)]" />
-          {/* Main fire glow - bright red/orange */}
-          <div className="absolute bottom-[-5%] left-1/2 -translate-x-1/2 w-[180%] h-[55%] bg-[radial-gradient(ellipse_at_bottom,_rgba(229,9,20,0.7)_0%,_rgba(200,30,0,0.35)_25%,_transparent_55%)]" />
-          {/* Orange/warm accent - ember center */}
-          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[140%] h-[40%] bg-[radial-gradient(ellipse_at_bottom,_rgba(255,80,0,0.4)_0%,_rgba(255,50,0,0.15)_35%,_transparent_55%)]" />
-          {/* Hot center spot - bright orange/yellow */}
-          <div className="absolute bottom-[2%] left-1/2 -translate-x-1/2 w-[60%] h-[15%] bg-[radial-gradient(ellipse_at_center,_rgba(255,140,0,0.3)_0%,_rgba(255,80,0,0.1)_40%,_transparent_60%)]" />
-          {/* Top dark fade for text contrast */}
-          <div className="absolute top-0 left-0 right-0 h-[40%] bg-gradient-to-b from-[#0a0a0a] via-[#0a0a0a]/60 to-transparent" />
+          {/* Wide outer glow - dark red base */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[200%] h-[100%] bg-[radial-gradient(ellipse_at_center,_rgba(120,30,0,0.35)_0%,_transparent_55%)]" />
+          {/* Main center glow - warm orange/gold */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[140%] h-[80%] bg-[radial-gradient(ellipse_at_center,_rgba(200,100,0,0.4)_0%,_rgba(180,60,0,0.2)_30%,_transparent_55%)]" />
+          {/* Golden center - bright warm gold */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[50%] bg-[radial-gradient(ellipse_at_center,_rgba(255,160,20,0.35)_0%,_rgba(255,120,0,0.15)_35%,_transparent_55%)]" />
+          {/* Hot center spot - bright golden yellow */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[40%] h-[25%] bg-[radial-gradient(ellipse_at_center,_rgba(255,200,50,0.2)_0%,_rgba(255,150,0,0.08)_40%,_transparent_60%)]" />
+          {/* Top and bottom dark edges for contrast */}
+          <div className="absolute top-0 left-0 right-0 h-[25%] bg-gradient-to-b from-[#0a0a0a] to-transparent" />
+          <div className="absolute bottom-0 left-0 right-0 h-[20%] bg-gradient-to-t from-[#0a0a0a]/80 to-transparent" />
         </div>
 
         {/* Header */}
