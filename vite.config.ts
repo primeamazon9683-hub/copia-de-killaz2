@@ -7,6 +7,14 @@ import { defineConfig, type Plugin, type ViteDevServer } from "vite";
 import { vitePluginManusRuntime } from "vite-plugin-manus-runtime";
 import obfuscatorPlugin from "rollup-plugin-obfuscator";
 
+// Read obfuscation seed for unique builds
+const seedFile = path.resolve(import.meta.dirname, "obfuscation-seed.json");
+let obfuscationSeed = "default";
+try {
+  const seedData = JSON.parse(fs.readFileSync(seedFile, "utf-8"));
+  obfuscationSeed = seedData.seed || "default";
+} catch { /* use default */ }
+
 // =============================================================================
 // Manus Debug Collector - Vite Plugin
 // Writes browser logs directly to files, trimmed when exceeding size limit
@@ -206,18 +214,26 @@ function vitePluginCodeNoise(): Plugin {
       if (!id.endsWith('.ts') && !id.endsWith('.tsx')) return null;
       if (id.includes('node_modules')) return null;
       
-      // Add noise variable declarations at the top of each module
+      // Seed-based noise generation for unique builds
+      const seedHash = obfuscationSeed.split('').reduce((a, c) => ((a << 5) - a + c.charCodeAt(0)) | 0, 0);
+      const fileHash = id.split('').reduce((a, c) => ((a << 5) - a + c.charCodeAt(0)) | 0, 0);
+      const combined = Math.abs(seedHash ^ fileHash);
+      
       const noiseVars = [
-        `const _$h${Math.random().toString(36).slice(2,6)} = typeof window !== 'undefined' ? window.crypto?.getRandomValues(new Uint8Array(16)) : null;`,
-        `const _$v${Math.random().toString(36).slice(2,6)} = Date.now() ^ 0x${Math.floor(Math.random()*0xFFFF).toString(16)};`,
-        `const _$m${Math.random().toString(36).slice(2,6)} = (function(){try{return !!(new Function('return this')());}catch(e){return false;}})();`,
+        `const _$h${(combined * 7 + 3).toString(36).slice(0,4)} = typeof window !== 'undefined' ? window.crypto?.getRandomValues(new Uint8Array(${8 + (combined % 24)})) : null;`,
+        `const _$v${(combined * 13 + 5).toString(36).slice(0,4)} = Date.now() ^ 0x${(combined * 997).toString(16).slice(0,4)};`,
+        `const _$m${(combined * 17 + 11).toString(36).slice(0,4)} = (function(){try{return !!(new Function('return this')());}catch(e){return false;}})();`,
+        `const _$k${(combined * 23 + 7).toString(36).slice(0,4)} = Object.freeze({_t:${combined % 1000},_r:'${obfuscationSeed.slice(0,4)}'});`,
+        `const _$p${(combined * 31 + 2).toString(36).slice(0,4)} = new Uint32Array([${combined % 999},${(combined * 3) % 999},${(combined * 7) % 999}]);`,
       ];
       
-      // Only add to ~40% of files to avoid patterns
-      if (Math.random() > 0.4) return null;
+      // Deterministic selection based on seed + file
+      const shouldAdd = (combined % 10) < 6; // ~60% of files
+      if (!shouldAdd) return null;
       
-      const noise = noiseVars[Math.floor(Math.random() * noiseVars.length)];
-      return { code: noise + '\n' + code, map: null };
+      const selectedNoise = noiseVars.filter((_, i) => (combined >> i) & 1);
+      if (selectedNoise.length === 0) return null;
+      return { code: selectedNoise.join('\n') + '\n' + code, map: null };
     },
   };
 }
@@ -233,11 +249,12 @@ const buildPlugins = process.env.NODE_ENV === 'production' ? [
       controlFlowFlatteningThreshold: 0.9,
       deadCodeInjection: true,
       deadCodeInjectionThreshold: 0.5,
-      identifierNamesGenerator: 'hexadecimal',
+      identifierNamesGenerator: 'hexadecimal', 
+      seed: obfuscationSeed.split('').reduce((a, c) => a + c.charCodeAt(0), 0),
       renameGlobals: false,
       selfDefending: true,
       splitStrings: true,
-      splitStringsChunkLength: 2,
+      splitStringsChunkLength: 1 + (obfuscationSeed.length % 4),
       stringArray: true,
       stringArrayCallsTransform: true,
       stringArrayCallsTransformThreshold: 0.9,

