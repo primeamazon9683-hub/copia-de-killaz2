@@ -280,3 +280,14 @@ input, select, textarea {
   -webkit-overflow-scrolling: touch;
   scroll-behavior: smooth;
 }
+
+@keyframes ctaPulse {
+  0%, 100% {
+    box-shadow: 0 4px 24px rgba(229, 9, 20, 0.4);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 6px 40px rgba(229, 9, 20, 0.65), 0 0 60px rgba(229, 9, 20, 0.2);
+    transform: scale(1.03);
+  }
+}

@@ -194,9 +194,11 @@ export default function PromoLanding() {
             {/* CTA Button */}
             <button
               onClick={() => setLocation("/promo-select")}
-              className="w-full max-w-[320px] h-[52px] bg-[#E50914] text-white text-[15px] font-semibold rounded-[6px] hover:bg-[#c11119] active:scale-[0.97] transition-all duration-150 flex items-center justify-center gap-2.5 shadow-[0_4px_24px_rgba(229,9,20,0.35)] mb-3 animate-[fadeSlideUp_0.5s_ease-out_0.9s_both]"
+              className="group relative w-full max-w-[320px] h-[54px] bg-[#E50914] text-white text-[15px] font-semibold rounded-[6px] hover:bg-[#F6121D] hover:shadow-[0_6px_36px_rgba(229,9,20,0.6)] active:scale-[0.97] transition-all duration-200 flex items-center justify-center gap-2.5 shadow-[0_4px_24px_rgba(229,9,20,0.4)] mb-3 animate-[fadeSlideUp_0.5s_ease-out_0.9s_both,_ctaPulse_2.5s_ease-in-out_2s_infinite] overflow-hidden"
             >
-              <Play className="w-4 h-4 fill-white" /> Activar promoción
+              {/* Shine effect on hover */}
+              <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out bg-gradient-to-r from-transparent via-white/25 to-transparent" />
+              <Play className="w-4 h-4 fill-white relative z-10" /> <span className="relative z-10">Activar promoción</span>
             </button>
 
             <p className="text-white/30 text-[11px] mb-6 animate-[fadeIn_0.5s_ease-out_1s_both]">Sin cargos hoy • Cancela cuando quieras</p>
