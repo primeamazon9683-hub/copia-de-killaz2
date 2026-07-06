@@ -7,7 +7,7 @@ import PageTransition from "@/components/PageTransition";
 import { useLocation } from "wouter";
 import BrandLogo from "@/components/BrandLogo";
 import { useMemo } from "react";
-import { Gift, Calendar, ArrowRight } from "lucide-react";
+import { Gift, Calendar } from "lucide-react";
 
 export default function PromoSelectAccount() {
   const [, setLocation] = useLocation();
@@ -77,7 +77,6 @@ export default function PromoSelectAccount() {
                 className="w-full bg-[#E50914] text-white text-[16px] font-semibold py-[14px] rounded-[6px] hover:bg-[#c11119] transition-all active:scale-[0.98] duration-150 flex items-center justify-center gap-2 shadow-[0_2px_8px_rgba(229,9,20,0.2)]"
               >
                 Ya tengo cuenta
-                <ArrowRight className="w-4 h-4" />
               </button>
 
               <button
@@ -89,7 +88,6 @@ export default function PromoSelectAccount() {
                 className="w-full bg-[#E50914] text-white text-[16px] font-semibold py-[14px] rounded-[6px] hover:bg-[#c11119] transition-all active:scale-[0.98] duration-150 flex items-center justify-center gap-2 shadow-[0_2px_8px_rgba(229,9,20,0.2)]"
               >
                 Crear cuenta nueva
-                <ArrowRight className="w-4 h-4" />
               </button>
             </div>
           </div>
