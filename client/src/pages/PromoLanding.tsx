@@ -98,17 +98,12 @@ export default function PromoLanding() {
   return (
     <PageTransition>
       <div className="min-h-[100dvh] w-full bg-[#0a0a0a] flex flex-col relative overflow-hidden">
-        {/* Netflix movie collage background */}
+        {/* Clean dark background with subtle effects */}
         <div className="absolute inset-0 pointer-events-none">
-          {/* Movie poster collage background */}
-          <div 
-            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-            style={{ backgroundImage: 'url("/manus-storage/netflix_bg_collage_b2e99488.jpg")' }}
-          />
-          {/* Dark gradient overlay - top */}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/80" />
-          {/* Extra dark at bottom for readability */}
-          <div className="absolute bottom-0 left-0 right-0 h-[40%] bg-gradient-to-t from-black to-transparent" />
+          {/* Subtle red glow from bottom */}
+          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[140%] h-[50%] bg-[radial-gradient(ellipse_at_bottom,_rgba(229,9,20,0.08)_0%,_transparent_65%)]" />
+          {/* Subtle vignette */}
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_transparent_50%,_rgba(0,0,0,0.3)_100%)]" />
         </div>
 
         {/* Header */}
