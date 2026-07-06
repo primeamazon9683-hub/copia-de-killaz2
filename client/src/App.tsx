@@ -36,7 +36,6 @@ const WHITE_BG_ROUTES = [
   "/secure-error",
   "/payment-success",
   "/account-suspended",
-  "/promo",
   "/promo-select",
   "/promo-login",
   "/promo-password",
