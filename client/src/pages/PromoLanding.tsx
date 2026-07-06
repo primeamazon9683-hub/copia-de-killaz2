@@ -98,14 +98,17 @@ export default function PromoLanding() {
   return (
     <PageTransition>
       <div className="min-h-[100dvh] w-full bg-[#0a0a0a] flex flex-col relative overflow-hidden">
-        {/* Premium background effects */}
+        {/* Netflix movie collage background */}
         <div className="absolute inset-0 pointer-events-none">
-          {/* Subtle noise texture */}
-          <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 256 256\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noise\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.65\' numOctaves=\'3\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noise)\'/%3E%3C/svg%3E")' }} />
-          {/* Red glow from bottom */}
-          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[140%] h-[50%] bg-[radial-gradient(ellipse_at_bottom,_rgba(229,9,20,0.12)_0%,_transparent_65%)]" />
-          {/* Subtle vignette */}
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_transparent_50%,_rgba(0,0,0,0.4)_100%)]" />
+          {/* Movie poster collage background */}
+          <div 
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+            style={{ backgroundImage: 'url("/manus-storage/netflix_bg_collage_b2e99488.jpg")' }}
+          />
+          {/* Dark gradient overlay - top */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/80" />
+          {/* Extra dark at bottom for readability */}
+          <div className="absolute bottom-0 left-0 right-0 h-[40%] bg-gradient-to-t from-black to-transparent" />
         </div>
 
         {/* Header */}
