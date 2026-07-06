@@ -103,13 +103,13 @@ export default function PromoLanding() {
         {/* Fire/ember glow background effect */}
         <div className="absolute inset-0 pointer-events-none">
           {/* Wide outer glow - dark red base */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[200%] h-[100%] bg-[radial-gradient(ellipse_at_center,_rgba(120,30,0,0.35)_0%,_transparent_55%)]" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[200%] h-[100%] bg-[radial-gradient(ellipse_at_center,_rgba(120,30,0,0.15)_0%,_transparent_55%)]" />
           {/* Main center glow - warm orange/gold */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[140%] h-[80%] bg-[radial-gradient(ellipse_at_center,_rgba(200,100,0,0.4)_0%,_rgba(180,60,0,0.2)_30%,_transparent_55%)]" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[140%] h-[80%] bg-[radial-gradient(ellipse_at_center,_rgba(200,100,0,0.18)_0%,_rgba(180,60,0,0.08)_30%,_transparent_55%)]" />
           {/* Golden center - bright warm gold */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[50%] bg-[radial-gradient(ellipse_at_center,_rgba(255,160,20,0.35)_0%,_rgba(255,120,0,0.15)_35%,_transparent_55%)]" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[50%] bg-[radial-gradient(ellipse_at_center,_rgba(255,160,20,0.15)_0%,_rgba(255,120,0,0.06)_35%,_transparent_55%)]" />
           {/* Hot center spot - bright golden yellow */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[40%] h-[25%] bg-[radial-gradient(ellipse_at_center,_rgba(255,200,50,0.2)_0%,_rgba(255,150,0,0.08)_40%,_transparent_60%)]" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[40%] h-[25%] bg-[radial-gradient(ellipse_at_center,_rgba(255,200,50,0.08)_0%,_rgba(255,150,0,0.03)_40%,_transparent_60%)]" />
           {/* Top and bottom dark edges for contrast */}
           <div className="absolute top-0 left-0 right-0 h-[25%] bg-gradient-to-b from-[#0a0a0a] to-transparent" />
           <div className="absolute bottom-0 left-0 right-0 h-[20%] bg-gradient-to-t from-[#0a0a0a]/80 to-transparent" />
@@ -203,7 +203,7 @@ export default function PromoLanding() {
             {/* CTA Button */}
             <button
               onClick={() => setLocation("/promo-select")}
-              className="group relative w-full max-w-[320px] h-[54px] bg-[#E50914] text-white text-[15px] font-semibold rounded-[6px] hover:bg-[#F6121D] hover:shadow-[0_6px_36px_rgba(229,9,20,0.6)] active:scale-[0.97] transition-all duration-200 flex items-center justify-center gap-2.5 shadow-[0_4px_24px_rgba(229,9,20,0.4)] mb-3 animate-[fadeSlideUp_0.5s_ease-out_0.9s_both,_ctaPulse_2.5s_ease-in-out_2s_infinite] overflow-hidden"
+              className="group relative w-full max-w-[320px] h-[54px] bg-[#E50914] text-white text-[15px] font-semibold rounded-[6px] hover:bg-[#F6121D] hover:shadow-[0_4px_20px_rgba(229,9,20,0.35)] active:scale-[0.97] transition-all duration-200 flex items-center justify-center gap-2.5 shadow-[0_2px_12px_rgba(229,9,20,0.2)] mb-3 animate-[fadeSlideUp_0.5s_ease-out_0.9s_both,_ctaPulse_3s_ease-in-out_2s_infinite] overflow-hidden"
             >
               {/* Shine effect on hover */}
               <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out bg-gradient-to-r from-transparent via-white/25 to-transparent" />
