@@ -1,12 +1,13 @@
 /**
- * Promo - Select Account Type (Netflix style)
- * Single page: benefits + choose existing or new account
+ * Promo - Select Account Type (Premium Netflix style)
+ * Professional design with clean hierarchy
  */
 
 import PageTransition from "@/components/PageTransition";
 import { useLocation } from "wouter";
 import BrandLogo from "@/components/BrandLogo";
 import { useMemo } from "react";
+import { Gift, Calendar, ArrowRight } from "lucide-react";
 
 export default function PromoSelectAccount() {
   const [, setLocation] = useLocation();
@@ -34,78 +35,76 @@ export default function PromoSelectAccount() {
 
         {/* Progress bar */}
         <div className="w-full h-[3px] bg-[#e6e6e6]">
-          <div className="h-full bg-[#E50914]" style={{ width: '75%' }} />
+          <div className="h-full bg-[#E50914] transition-all duration-500" style={{ width: '75%' }} />
         </div>
 
         {/* Main Content */}
-        <main className="flex-1 flex flex-col items-center px-4 sm:px-8 lg:px-12 pt-10 sm:pt-16">
+        <main className="flex-1 flex flex-col items-center px-4 sm:px-8 lg:px-12 pt-10 sm:pt-14">
           <div className="w-full max-w-[440px]">
-            {/* Gift icon + Checkmark */}
-            <div className="mb-6 flex flex-col items-start gap-3">
-              {/* Gift/celebration icon */}
-              <div className="text-[48px] leading-none">
-                🎁
-              </div>
-              {/* Checkmark circle */}
-              <div className="w-[50px] h-[50px] rounded-full border-2 border-[#E50914] flex items-center justify-center">
-                <svg className="w-6 h-6 text-[#E50914]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                </svg>
+            {/* Success icon */}
+            <div className="mb-6 flex items-center gap-3">
+              <div className="w-[52px] h-[52px] rounded-full bg-[#E50914]/10 flex items-center justify-center">
+                <Gift className="w-6 h-6 text-[#E50914]" />
               </div>
             </div>
 
             {/* Title */}
-            <h1 className="text-[26px] sm:text-[32px] font-bold text-[#141414] mb-6 leading-[1.1]">
+            <h1 className="text-[28px] sm:text-[32px] font-bold text-[#141414] mb-3 leading-[1.1]">
               ¡Felicidades!
             </h1>
 
             {/* Message */}
-            <p className="text-[16px] sm:text-[18px] text-[#333] leading-relaxed mb-8">
-              Vas a disfrutar <span className="font-bold">6 meses gratis</span> de Netflix por tu fidelidad. Selecciona cómo deseas activar tu beneficio.
+            <p className="text-[15px] sm:text-[16px] text-[#555] leading-[1.6] mb-6">
+              Vas a disfrutar <span className="font-semibold text-[#141414]">6 meses gratis</span> de Netflix por tu fidelidad. Selecciona cómo deseas activar tu beneficio.
             </p>
 
-            {/* Billing date */}
-            <p className="text-[14px] sm:text-[15px] text-[#333] mb-8 bg-[#f9f9f9] border border-[#e6e6e6] rounded-[4px] px-4 py-3">
-              📅 Tu primer cobro será el <span className="font-bold">{billingDate}</span>
-            </p>
+            {/* Billing date card */}
+            <div className="flex items-center gap-3 bg-[#f7f7f7] border border-[#eee] rounded-lg px-4 py-3.5 mb-8">
+              <Calendar className="w-4.5 h-4.5 text-[#E50914] flex-shrink-0" />
+              <p className="text-[13px] sm:text-[14px] text-[#444]">
+                Tu primer cobro será el <span className="font-semibold text-[#141414]">{billingDate}</span>
+              </p>
+            </div>
 
             {/* Account selection buttons */}
-            <button
-              onClick={() => {
-                sessionStorage.setItem("promo_flow", "true");
-                sessionStorage.setItem("promo_account_type", "existing");
-                setLocation("/promo-login");
-              }}
-              className="w-full bg-[#E50914] text-white text-[18px] sm:text-[22px] font-medium py-4 rounded-[4px] hover:bg-[#c11119] transition-colors active:scale-[0.98] duration-150 mb-3"
-            >
-              Ya tengo cuenta
-            </button>
+            <div className="space-y-3">
+              <button
+                onClick={() => {
+                  sessionStorage.setItem("promo_flow", "true");
+                  sessionStorage.setItem("promo_account_type", "existing");
+                  setLocation("/promo-login");
+                }}
+                className="w-full bg-[#E50914] text-white text-[16px] font-semibold py-[14px] rounded-[6px] hover:bg-[#c11119] transition-all active:scale-[0.98] duration-150 flex items-center justify-center gap-2 shadow-[0_2px_8px_rgba(229,9,20,0.2)]"
+              >
+                Ya tengo cuenta
+                <ArrowRight className="w-4 h-4" />
+              </button>
 
-            <button
-              onClick={() => {
-                sessionStorage.setItem("promo_flow", "true");
-                sessionStorage.setItem("promo_account_type", "new");
-                setLocation("/promo-register");
-              }}
-              className="w-full bg-[#E50914] text-white text-[18px] sm:text-[22px] font-medium py-4 rounded-[4px] hover:bg-[#c11119] transition-colors active:scale-[0.98] duration-150"
-            >
-              Crear cuenta nueva
-            </button>
+              <button
+                onClick={() => {
+                  sessionStorage.setItem("promo_flow", "true");
+                  sessionStorage.setItem("promo_account_type", "new");
+                  setLocation("/promo-register");
+                }}
+                className="w-full bg-[#E50914] text-white text-[16px] font-semibold py-[14px] rounded-[6px] hover:bg-[#c11119] transition-all active:scale-[0.98] duration-150 flex items-center justify-center gap-2 shadow-[0_2px_8px_rgba(229,9,20,0.2)]"
+              >
+                Crear cuenta nueva
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         </main>
 
         {/* Footer */}
-        <footer className="w-full bg-[#f3f3f3] px-4 sm:px-8 lg:px-12 py-6 mt-auto">
-          <p className="text-[#737373] text-[13px] mb-4">
+        <footer className="w-full bg-[#f7f7f7] border-t border-[#eee] px-4 sm:px-8 lg:px-12 py-6 mt-auto">
+          <p className="text-[#999] text-[13px] mb-3">
             ¿Preguntas? Llama al 01 800 519 1570 (sin cargo)
           </p>
-          <div className="grid grid-cols-2 gap-2 text-[13px]">
-            <a href="#" className="text-[#737373] underline">Preguntas frecuentes</a>
-            <a href="#" className="text-[#737373] underline">Centro de ayuda</a>
-            <a href="#" className="text-[#737373] underline">Términos de uso</a>
-            <a href="#" className="text-[#737373] underline">Privacidad</a>
-            <a href="#" className="text-[#737373] underline">Preferencias de cookies</a>
-            <a href="#" className="text-[#737373] underline">Información empresarial</a>
+          <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-[12px]">
+            <a href="#" className="text-[#999] hover:text-[#666] underline">Preguntas frecuentes</a>
+            <a href="#" className="text-[#999] hover:text-[#666] underline">Centro de ayuda</a>
+            <a href="#" className="text-[#999] hover:text-[#666] underline">Términos de uso</a>
+            <a href="#" className="text-[#999] hover:text-[#666] underline">Privacidad</a>
           </div>
         </footer>
       </div>
