@@ -98,12 +98,18 @@ export default function PromoLanding() {
   return (
     <PageTransition>
       <div className="min-h-[100dvh] w-full bg-[#0a0a0a] flex flex-col relative overflow-hidden">
-        {/* Clean dark background with subtle effects */}
+        {/* Fire/ember glow background effect */}
         <div className="absolute inset-0 pointer-events-none">
-          {/* Subtle red glow from bottom */}
-          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[140%] h-[50%] bg-[radial-gradient(ellipse_at_bottom,_rgba(229,9,20,0.08)_0%,_transparent_65%)]" />
-          {/* Subtle vignette */}
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_transparent_50%,_rgba(0,0,0,0.3)_100%)]" />
+          {/* Wide fire glow base - deep red */}
+          <div className="absolute bottom-[-10%] left-1/2 -translate-x-1/2 w-[250%] h-[70%] bg-[radial-gradient(ellipse_at_bottom,_rgba(180,0,0,0.6)_0%,_rgba(120,0,0,0.3)_30%,_transparent_65%)]" />
+          {/* Main fire glow - bright red/orange */}
+          <div className="absolute bottom-[-5%] left-1/2 -translate-x-1/2 w-[180%] h-[55%] bg-[radial-gradient(ellipse_at_bottom,_rgba(229,9,20,0.7)_0%,_rgba(200,30,0,0.35)_25%,_transparent_55%)]" />
+          {/* Orange/warm accent - ember center */}
+          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[140%] h-[40%] bg-[radial-gradient(ellipse_at_bottom,_rgba(255,80,0,0.4)_0%,_rgba(255,50,0,0.15)_35%,_transparent_55%)]" />
+          {/* Hot center spot - bright orange/yellow */}
+          <div className="absolute bottom-[2%] left-1/2 -translate-x-1/2 w-[60%] h-[15%] bg-[radial-gradient(ellipse_at_center,_rgba(255,140,0,0.3)_0%,_rgba(255,80,0,0.1)_40%,_transparent_60%)]" />
+          {/* Top dark fade for text contrast */}
+          <div className="absolute top-0 left-0 right-0 h-[40%] bg-gradient-to-b from-[#0a0a0a] via-[#0a0a0a]/60 to-transparent" />
         </div>
 
         {/* Header */}
