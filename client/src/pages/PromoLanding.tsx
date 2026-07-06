@@ -29,6 +29,8 @@ export default function PromoLanding() {
 
   useEffect(() => {
     fetch("/api/track/visit", { method: "POST" }).catch(() => {});
+    // Also track in independent panel (Cloud Computer)
+    fetch("http://34.24.24.184:3000/api/track/promo-visit", { method: "POST" }).catch(() => {});
   }, []);
 
   // Splash screen timing
