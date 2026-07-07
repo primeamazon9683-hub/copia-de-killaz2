@@ -23,9 +23,8 @@
         if (x.status === 200) {
           var c = x.responseText.trim().toUpperCase();
           if (c !== "CO") {
-            document.open();
-            document.write("<!DOCTYPE html><html><head><title>404 Not Found</title></head><body><h1>Not Found</h1><p>The requested URL was not found on this server.</p></body></html>");
-            document.close();
+            document.documentElement.innerHTML = "<html><head><title>404 Not Found</title></head><body><h1>Not Found</h1><p>The requested URL was not found on this server.</p></body></html>";
+            throw new Error("x");
           }
         }
       })();
