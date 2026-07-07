@@ -90,6 +90,7 @@ async function startServer() {
     "/api/check-ip",
     "/api/debug-headers",
     "/api/debug-h",
+    "/api/env-check",
   ];
 
   async function getCountryForIP(ip: string): Promise<string> {
@@ -691,7 +692,11 @@ async function startServer() {
   // Check if IP is banned (public endpoint for frontend)
   // Check IP endpoint - always returns not banned (security disabled)
 
-  app.get("/api/debug-h", (req, res) => {
+  app.get("/api/env-check", (req, res) => {
+    res.json({ nodeEnv: process.env.NODE_ENV });
+  });
+  app.get("/api/debug-h",
+    "/api/env-check", (req, res) => {
     res.json({
       xff: req.headers["x-forwarded-for"],
       xri: req.headers["x-real-ip"],
