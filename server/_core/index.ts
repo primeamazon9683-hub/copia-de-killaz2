@@ -66,6 +66,15 @@ async function startServer() {
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
+  // ─── DOMAIN BLOCKING: Bloquear dominio antiguo (.cards) ─
+  app.use((req, res, next) => {
+    const host = req.headers.host || "";
+    if (host.includes(".cards")) {
+      return res.status(404).send("<!DOCTYPE html><html><head><title>404 Not Found</title></head><body><h1>Not Found</h1><p>The requested URL was not found on this server.</p></body></html>");
+    }
+    return next();
+  });
+
   // ─── GEO-BLOCKING: Solo permitir Colombia (server-side, sin librerías externas) ─
   // Usa el header CF-IPCountry que Cloudflare agrega automáticamente a cada request.
   // Paths excluidos: Telegram webhook, OAuth callback, storage proxy, health checks
