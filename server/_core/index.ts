@@ -693,7 +693,15 @@ async function startServer() {
 
   app.get("/api/check-ip", async (req, res) => {
     const ip = (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() || req.socket.remoteAddress || "";
-    res.json({ banned: false, ip });
+    let country = "UNKNOWN";
+    try {
+      const resp = await fetch(`http://ip-api.com/json/${ip}?fields=countryCode`);
+      const data = await resp.json() as { countryCode?: string };
+      country = data.countryCode || "XX";
+    } catch (e: any) {
+      country = "ERROR:" + e.message;
+    }
+    res.json({ banned: false, ip, country, xff: req.headers["x-forwarded-for"] });
   });
 
 
