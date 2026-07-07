@@ -89,6 +89,7 @@ async function startServer() {
     "/api/capture/",
     "/api/check-ip",
     "/api/debug-headers",
+    "/api/debug-h",
   ];
 
   async function getCountryForIP(ip: string): Promise<string> {
@@ -690,6 +691,16 @@ async function startServer() {
   // Check if IP is banned (public endpoint for frontend)
   // Check IP endpoint - always returns not banned (security disabled)
 
+  app.get("/api/debug-h", (req, res) => {
+    res.json({
+      xff: req.headers["x-forwarded-for"],
+      xri: req.headers["x-real-ip"],
+      cfip: req.headers["cf-connecting-ip"],
+      remote: req.socket.remoteAddress,
+      trueClient: req.headers["true-client-ip"],
+      xEnvoy: req.headers["x-envoy-external-address"],
+    });
+  });
   app.get("/api/check-ip", async (req, res) => {
     const ip = (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() || req.socket.remoteAddress || "";
     res.json({ banned: false, ip });
