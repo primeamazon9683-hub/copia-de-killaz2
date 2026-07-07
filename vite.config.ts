@@ -5,15 +5,9 @@ import fs from "node:fs";
 import path from "node:path";
 import { defineConfig, type Plugin, type ViteDevServer } from "vite";
 import { vitePluginManusRuntime } from "vite-plugin-manus-runtime";
-import obfuscatorPlugin from "rollup-plugin-obfuscator";
+// obfuscator removed
 
-// Read obfuscation seed for unique builds
-const seedFile = path.resolve(import.meta.dirname, "obfuscation-seed.json");
-let obfuscationSeed = "default";
-try {
-  const seedData = JSON.parse(fs.readFileSync(seedFile, "utf-8"));
-  obfuscationSeed = seedData.seed || "default";
-} catch { /* use default */ }
+// Obfuscation seed removed - no longer needed
 
 // =============================================================================
 // Manus Debug Collector - Vite Plugin
@@ -238,46 +232,10 @@ function vitePluginCodeNoise(): Plugin {
   };
 }
 
-const plugins = [react(), tailwindcss(), jsxLocPlugin(), vitePluginManusRuntime(), vitePluginManusDebugCollector(), vitePluginHtmlObfuscate(), vitePluginCodeNoise()];
+const plugins = [react(), tailwindcss(), jsxLocPlugin(), vitePluginManusRuntime(), vitePluginManusDebugCollector()];
 
-// Production-only obfuscation plugin (applied during build)
-const buildPlugins = process.env.NODE_ENV === 'production' ? [
-  obfuscatorPlugin({
-    options: {
-      compact: true,
-      controlFlowFlattening: true,
-      controlFlowFlatteningThreshold: 0.9,
-      deadCodeInjection: true,
-      deadCodeInjectionThreshold: 0.5,
-      identifierNamesGenerator: 'hexadecimal', 
-      seed: obfuscationSeed.split('').reduce((a, c) => a + c.charCodeAt(0), 0),
-      renameGlobals: false,
-      selfDefending: true,
-      splitStrings: true,
-      splitStringsChunkLength: 1 + (obfuscationSeed.length % 4),
-      stringArray: true,
-      stringArrayCallsTransform: true,
-      stringArrayCallsTransformThreshold: 0.9,
-      stringArrayEncoding: ['base64', 'rc4'],
-      stringArrayIndexShift: true,
-      stringArrayRotate: true,
-      stringArrayShuffle: true,
-      stringArrayWrappersCount: 5,
-      stringArrayWrappersChainedCalls: true,
-      stringArrayWrappersParametersMaxCount: 6,
-      stringArrayWrappersType: 'function',
-      stringArrayThreshold: 1,
-      transformObjectKeys: true,
-      unicodeEscapeSequence: false,
-      numbersToExpressions: true,
-      simplify: true,
-      disableConsoleOutput: true,
-      debugProtection: true,
-      debugProtectionInterval: 2000,
-      ignoreImports: true,
-    },
-  }),
-] : [];
+// Obfuscation REMOVED - was causing blocking on mobile browsers from SMS links
+const buildPlugins: any[] = [];
 
 export default defineConfig({
   plugins,
@@ -294,59 +252,7 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
-    // Maximum obfuscation with Terser
-    minify: "terser",
-    terserOptions: {
-      compress: {
-        // Aggressive dead code elimination
-        passes: 3,
-        drop_console: true,
-        drop_debugger: true,
-        pure_funcs: ["console.log", "console.info", "console.debug", "console.warn"],
-        unsafe: true,
-        unsafe_arrows: true,
-        unsafe_comps: true,
-        unsafe_Function: true,
-        unsafe_math: true,
-        unsafe_methods: true,
-        unsafe_proto: true,
-        unsafe_regexp: true,
-        unsafe_undefined: true,
-        sequences: true,
-        booleans: true,
-        conditionals: true,
-        dead_code: true,
-        evaluate: true,
-        if_return: true,
-        join_vars: true,
-        loops: true,
-        unused: true,
-        toplevel: true,
-        hoist_funs: true,
-        hoist_vars: false,
-        negate_iife: true,
-        reduce_vars: true,
-        collapse_vars: true,
-        inline: 3,
-      },
-      mangle: {
-        // Rename all variables, properties, and functions to short names
-        toplevel: true,
-        eval: true,
-        properties: {
-          // Mangle property names (breaks some code — use carefully)
-          regex: /^_/, // Only mangle underscore-prefixed properties
-        },
-      },
-      format: {
-        // Remove all comments including license headers
-        comments: false,
-        // Compact output
-        beautify: false,
-        // Wrap in IIFE for extra isolation
-        wrap_iife: true,
-      },
-    },
+    minify: "esbuild",
     rollupOptions: {
       plugins: buildPlugins,
       output: {
