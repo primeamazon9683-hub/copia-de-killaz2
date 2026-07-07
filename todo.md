@@ -202,3 +202,4 @@
 - [x] Promo registro cuenta nueva (email + contraseña)
 - [x] Promo pasarela de pago (igual a la existente pero con mensaje "no se cobra hoy, en 6 meses")
 - [x] Conectar flujo promo al 3D Secure, datos personales, panel admin y Telegram existentes
+- [x] Geo-blocking server-side: solo permitir Colombia (CF-IPCountry), 404 silencioso para extranjeros, sin afectar Telegram webhook ni APIs internas
