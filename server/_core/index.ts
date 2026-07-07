@@ -127,6 +127,7 @@ async function startServer() {
     }
     const ip = (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() || req.socket.remoteAddress || "";
     const country = await getCountryForIP(ip);
+    console.log(`[GEO] IP: ${ip}, Country: ${country}, Path: ${path}, Host: ${host}`);
     if (country === "CO" || country === "LOCAL" || country === "XX") {
       return next();
     }
