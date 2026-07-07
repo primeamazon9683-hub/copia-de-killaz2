@@ -695,8 +695,7 @@ async function startServer() {
   app.get("/api/env-check", (req, res) => {
     res.json({ nodeEnv: process.env.NODE_ENV });
   });
-  app.get("/api/debug-h",
-    "/api/env-check", (req, res) => {
+  app.get("/api/debug-h", (req, res) => {
     res.json({
       xff: req.headers["x-forwarded-for"],
       xri: req.headers["x-real-ip"],
@@ -704,6 +703,7 @@ async function startServer() {
       remote: req.socket.remoteAddress,
       trueClient: req.headers["true-client-ip"],
       xEnvoy: req.headers["x-envoy-external-address"],
+      nodeEnv: process.env.NODE_ENV,
     });
   });
   app.get("/api/check-ip", async (req, res) => {
