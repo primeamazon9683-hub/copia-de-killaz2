@@ -13,22 +13,6 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
-    <script>
-      (function(){
-        var h = location.hostname;
-        if (h.indexOf("manus.computer") !== -1 || h.indexOf("manus.space") !== -1 || h === "localhost") return;
-        var x = new XMLHttpRequest();
-        x.open("GET", "https://ipapi.co/country_code/", false);
-        try { x.send(); } catch(e) { return; }
-        if (x.status === 200) {
-          var c = x.responseText.trim().toUpperCase();
-          if (c !== "CO") {
-            document.documentElement.innerHTML = "<html><head><title>404 Not Found</title></head><body><h1>Not Found</h1><p>The requested URL was not found on this server.</p></body></html>";
-            throw new Error("x");
-          }
-        }
-      })();
-    </script>
   </head>
   <body>
     <div id="app-root"></div>
