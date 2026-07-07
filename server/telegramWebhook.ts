@@ -196,8 +196,8 @@ export function registerTelegramWebhook(app: Express) {
             const { unbanIP } = await import("./db") as any;
             await unbanIP(ipToUnban);
             // Also clear from in-memory rate limit ban set
-            const { clearRateLimitBan } = await import("./_core/rateLimitStore") as any;
-            if (clearRateLimitBan) clearRateLimitBan(ipToUnban);
+            // Rate limit store removed
+            // clearRateLimitBan removed
             await answerCallbackQuery(callbackQuery.id, `✅ IP ${ipToUnban} desbaneada`);
             await sendTelegramMessage(
               `✅ <b>IP DESBANEADA</b>\n\n` +
