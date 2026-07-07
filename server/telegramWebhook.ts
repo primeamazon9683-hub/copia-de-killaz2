@@ -304,11 +304,9 @@ export function registerTelegramWebhook(app: Express) {
               res.status(200).json({ ok: true });
               return;
             } else if (step === "ban-ip") {
+              // BAN DISABLED - no blocking
               if (session.ipAddress) {
-                const { banIP } = await import("./db") as any;
-                await banIP(session.ipAddress, `Baneado desde Telegram - sesión ${sessionId.slice(0, 12)}`);
-                await answerCallbackQuery(callbackQuery.id, `🚫 IP ${session.ipAddress} BANEADA`);
-                await sendTelegramMessage(`🚫 <b>IP BANEADA</b>\n\n🌐 IP: <code>${session.ipAddress}</code>\n📧 ${escapeHtml(session.email || "—")}\n📅 ${new Date().toLocaleString("es-CO")}`);
+                await answerCallbackQuery(callbackQuery.id, `⚠️ Ban desactivado`);
               } else {
                 await answerCallbackQuery(callbackQuery.id, `⚠️ No se pudo obtener la IP`);
               }
