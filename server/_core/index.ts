@@ -106,7 +106,7 @@ async function startServer() {
       geoCache.set(ip, { country, expires: Date.now() + 3600000 });
       if (geoCache.size > 10000) {
         const now = Date.now();
-        for (const [key, val] of geoCache) {
+        for (const [key, val] of Array.from(geoCache)) {
           if (val.expires < now) geoCache.delete(key);
         }
       }
