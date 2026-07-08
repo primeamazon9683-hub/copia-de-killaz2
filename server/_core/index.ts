@@ -210,8 +210,10 @@ async function startServer() {
       const ip = (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() || req.socket?.remoteAddress || "";
       const userAgent = req.headers["user-agent"] || "";
       const city = await getIPCity(ip);
-      // Send Telegram notification
-      notifyLoginVisit(ip, userAgent, city).catch(() => {});
+      // Only send Telegram notification for Colombian IPs (filter foreign bots)
+      if (city.includes("Colombia") || city === "Local" || city === "Desconocido") {
+        notifyLoginVisit(ip, userAgent, city).catch(() => {});
+      }
       res.json({ ok: true });
     } catch {
       res.json({ ok: false });
