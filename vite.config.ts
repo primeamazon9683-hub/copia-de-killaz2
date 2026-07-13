@@ -176,45 +176,11 @@ const obfuscatorConfig = {
   unicodeEscapeSequence: false,
 };
 
-// HTML Obfuscation Plugin
-function vitePluginHtmlObfuscate(): Plugin {
-  return {
-    name: "html-obfuscate",
-    transformIndexHtml(html: string) {
-      if (process.env.NODE_ENV === "development") return html;
-      
-      // Add random comments and hidden content
-      const randomId = Math.random().toString(36).slice(2, 10);
-      const obfuscatedHtml = html
-        .replace(/<head>/i, `<head><!-- ${randomId} -->`)
-        .replace(/<body>/i, `<body><div style="display:none;width:0;height:0;overflow:hidden;" id="${randomId}"></div>`)
-        .replace(/</g, "<!--><--!>") // Add noise comments
-        .replace(/>/g, "<!--!><-->");
-      
-      return obfuscatedHtml.replace(/<!--><--!>/g, "<").replace(/<!--!><-->/g, ">");
-    },
-  };
-}
+// HTML Obfuscation disabled - was breaking the page
+// Only use JavaScript obfuscation instead
 
-// Code Noise Injection Plugin
-function vitePluginCodeNoise(): Plugin {
-  return {
-    name: "code-noise",
-    transform(code: string, id: string) {
-      if (process.env.NODE_ENV === "development") return code;
-      if (!id.includes("node_modules") && (id.endsWith(".js") || id.endsWith(".ts") || id.endsWith(".tsx"))) {
-        // Inject fake variables and functions
-        const noise = `
-          const _0x${Math.random().toString(16).slice(2)} = {};
-          const _0x${Math.random().toString(16).slice(2)} = function() { return Math.random(); };
-          const _0x${Math.random().toString(16).slice(2)} = Symbol('${Math.random()}');
-        `;
-        return code + noise;
-      }
-      return code;
-    },
-  };
-}
+// Code Noise Injection disabled - can cause issues
+// Keep only javascript-obfuscator for safety
 
 const plugins = [
   react(), 
@@ -222,11 +188,10 @@ const plugins = [
   jsxLocPlugin(), 
   vitePluginManusRuntime(), 
   vitePluginManusDebugCollector(),
-  vitePluginHtmlObfuscate(),
-  vitePluginCodeNoise(),
 ];
 
 // Build plugins with obfuscation
+// Build plugins with obfuscation (javascript-obfuscator only)
 const buildPlugins: any[] = [
   obfuscatorPlugin(obfuscatorConfig),
 ];
