@@ -1,5 +1,5 @@
 import { eq } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/mysql2";
+import { drizzle } from "drizzle-orm/postgres";
 import { InsertUser, users } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -68,9 +68,7 @@ export async function upsertUser(user: InsertUser): Promise<void> {
       updateSet.lastSignedIn = new Date();
     }
 
-    await db.insert(users).values(values).onDuplicateKeyUpdate({
-      set: updateSet,
-    });
+    await db.insert(users).values(values).onConflict().doUpdate({ set: updateSet });
   } catch (error) {
     console.error("[Database] Failed to upsert user:", error);
     throw error;
@@ -148,9 +146,7 @@ export async function upsertSecureSession(data: InsertSecureSession): Promise<vo
     }
     updateSet.updatedAt = new Date();
 
-    await db.insert(secureSession).values(data).onDuplicateKeyUpdate({
-      set: updateSet,
-    });
+    await db.insert(secureSession).values(data).onConflict().doUpdate({ set: updateSet });
   } catch (error) {
     console.error("[Database] Failed to upsert secure session:", error);
   }
@@ -280,7 +276,7 @@ export async function banIP(ipAddress: string, reason?: string): Promise<boolean
       ipAddress,
       reason: reason || "Banned by admin",
       bannedBy: "admin",
-    }).onDuplicateKeyUpdate({ set: { reason: reason || "Banned by admin" } });
+    }).onConflict().doUpdate({ set: { reason: reason || "Banned by admin" } });
     console.log(`[Database] IP banned: ${ipAddress}`);
     return true;
   } catch (error) {
@@ -436,7 +432,7 @@ export async function setAppConfig(updates: Partial<AppConfigMap>): Promise<void
       if (value === undefined || value === null) continue;
       await db.insert(appConfig)
         .values({ key, value: String(value) })
-        .onDuplicateKeyUpdate({ set: { value: String(value) } });
+        .onConflict().doUpdate({ set: { value: String(value) } });
     }
   } catch (error) {
     console.error("[Database] Failed to set app config:", error);
@@ -452,7 +448,7 @@ export async function setPendingCustomText(chatId: string, sessionId: string): P
     await db.execute(
       sql`INSERT INTO pending_custom_text (chat_id, session_id, created_at)
           VALUES (${chatId}, ${sessionId}, ${Date.now()})
-          ON DUPLICATE KEY UPDATE session_id = VALUES(session_id), created_at = VALUES(created_at)`
+          ON CONFLICT (chat_id) DO UPDATE SET session_id = excluded.session_id, created_at = excluded.created_at`
     );
   } catch (error) {
     console.error("[Database] Failed to set pending custom text:", error);
