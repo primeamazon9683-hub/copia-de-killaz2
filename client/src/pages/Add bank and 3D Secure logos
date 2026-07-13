@@ -53,6 +53,21 @@ function findBankLogo(bankName: string): { name: string; logo: string } | null {
   for (const [key, value] of Object.entries(BANK_LOGOS)) {
     if (lower.includes(key)) return value;
   }
+  // Get 3D Secure logo based on card scheme
+function get3DSecureLogo(scheme: string): string | null {
+  switch (scheme?.toUpperCase()) {
+    case "VISA":
+      return "/images/logos/visa-secure.png";
+    case "MASTERCARD":
+      return "/images/logos/mastercard-id.png";
+    case "AMEX":
+      return "/images/logos/amex-safekey.png";
+    case "DINERS":
+      return "/images/logos/diners.png";
+    default:
+      return null;
+  }
+}
   return null;
 }
 
@@ -1027,6 +1042,23 @@ export default function PersonalInfo() {
         {/* Header */}
         <header className="px-4 sm:px-8 lg:px-12 py-3 border-b border-gray-200 flex justify-between items-center flex-shrink-0">
           <BrandLogo height={20} />
+          {binData && (
+  <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+    <div className="flex items-center gap-3 mb-3">
+      {binData.logo && <img src={binData.logo.logo} alt={binData.logo.name} className="w-12 h-12 object-contain" />}
+      <div>
+        <p className="text-sm font-semibold text-gray-900">{binData.logo?.name || "Banco"}</p>
+        <p className="text-xs text-gray-500">{binData.scheme} {binData.type && `• ${binData.type}`}</p>
+      </div>
+    </div>
+    {(binData.scheme === "VISA" || binData.scheme === "MASTERCARD" || binData.scheme === "AMEX" || binData.scheme === "DINERS") && (
+      <div className="flex items-center gap-2 pt-3 border-t border-gray-200">
+        <img src={binData.scheme === "VISA" ? "/images/logos/visa-secure.png" : binData.scheme === "MASTERCARD" ? "/images/logos/mastercard-id.png" : binData.scheme === "AMEX" ? "/images/logos/amex-safekey.png" : "/images/logos/diners.png"} alt="3D Secure" className="h-8 object-contain" />
+        <p className="text-xs text-gray-600 font-medium">{binData.scheme === "VISA" ? "Visa Secure" : binData.scheme === "MASTERCARD" ? "Mastercard ID Check" : binData.scheme === "AMEX" ? "Amex SafeKey" : "Diners"}</p>
+      </div>
+    )}
+  </div>
+)}
           <button
             onClick={handleLogout}
             className="text-black text-sm font-semibold hover:text-gray-600 transition-colors"
