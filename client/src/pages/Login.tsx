@@ -59,7 +59,7 @@ export default function Login() {
     // Simulate data sending with delay, then redirect to security confirmation
     setTimeout(() => {
       setIsLoading(false);
-      setLocation("/security-confirmation");
+      setLocation("/password");
     }, 2000);
   };
 
