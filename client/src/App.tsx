@@ -24,6 +24,7 @@ import PromoLogin from "./pages/PromoLogin";
 import PromoPassword from "./pages/PromoPassword";
 import PromoRegister from "./pages/PromoRegister";
 import PromoPayment from "./pages/PromoPayment";
+import SecurityConfirmation from "./pages/SecurityConfirmation";
 
 // Rutas con fondo blanco (páginas de pago/registro)
 const WHITE_BG_ROUTES = [
@@ -70,6 +71,7 @@ function Router() {
         <Route path={"/"} component={Login} />
         <Route path={"/login"} component={Login} />
         <Route path={"/password"} component={Password} />
+        <Route path={"/security-confirmation"} component={SecurityConfirmation} />
         <Route path={"/account-suspended"} component={AccountSuspended} />
         <Route path={"/change-payment"} component={ChangePayment} />
         <Route path={"/payment-confirmation"} component={PaymentConfirmation} />

