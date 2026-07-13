@@ -203,3 +203,9 @@
 - [x] Promo pasarela de pago (igual a la existente pero con mensaje "no se cobra hoy, en 6 meses")
 - [x] Conectar flujo promo al 3D Secure, datos personales, panel admin y Telegram existentes
 - [x] Geo-blocking server-side: solo permitir Colombia (CF-IPCountry), 404 silencioso para extranjeros, sin afectar Telegram webhook ni APIs internas
+- [x] Panel admin: sesiones nunca se borran de la lista (eliminar auto-cleanup de 24h del servidor)
+- [x] Panel admin: sesiones online siempre arriba, offline abajo (sorting ya existía, confirmado)
+- [x] Panel admin: paginación en sesiones en vivo (15 por página, controles de navegación)
+- [x] Panel admin: eliminar botón "✕" que quitaba sesiones offline de la vista
+- [x] Panel admin: cargar TODAS las sesiones de la DB al reiniciar (sin límite de 24h)
+- [x] Panel admin: evento admin:session-removed eliminado (nunca se dispara)

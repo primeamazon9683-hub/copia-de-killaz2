@@ -62,12 +62,10 @@ async function loadSessionsFromDB() {
   try {
     const dbSessions = await getAllSecureSessions();
     if (!dbSessions || dbSessions.length === 0) return;
-    // Only load sessions from the last 24 hours
-    const cutoff = Date.now() - 24 * 60 * 60 * 1000;
+    // Load ALL sessions from DB (no time cutoff - never lose data)
     let loaded = 0;
     for (const s of dbSessions) {
       const updatedAt = s.updatedAt ? new Date(s.updatedAt).getTime() : 0;
-      if (updatedAt < cutoff) continue;
       if (activeSessions.has(s.sessionId)) continue;
       activeSessions.set(s.sessionId, {
         sessionId: s.sessionId,
@@ -578,27 +576,9 @@ export function registerSocketIO(server: HttpServer) {
   });
 
   // ==========================================
-  // AUTO-CLEANUP: Remove inactive sessions after 24 hours
+  // NOTE: Auto-cleanup DISABLED - sessions are never removed from memory
+  // They persist until server restart (and are reloaded from DB on restart)
   // ==========================================
-  const SESSION_TIMEOUT_MS = 24 * 60 * 60 * 1000; // 24 hours
-  const CLEANUP_INTERVAL_MS = 30 * 60 * 1000; // Check every 30 minutes
-
-  setInterval(() => {
-    const now = Date.now();
-    let cleaned = 0;
-    for (const [sessionId, session] of Array.from(activeSessions.entries())) {
-      const inactive = now - session.lastActivity;
-      if (!session.isOnline && inactive > SESSION_TIMEOUT_MS) {
-        activeSessions.delete(sessionId);
-        cleaned++;
-        // Notify admins that session was removed
-        io?.to("admin-room").emit("admin:session-removed", { sessionId });
-      }
-    }
-    if (cleaned > 0) {
-      console.log(`[Socket] Cleanup: removed ${cleaned} inactive session(s). Active: ${activeSessions.size}`);
-    }
-  }, CLEANUP_INTERVAL_MS);
 
   return io;
 }
