@@ -135,6 +135,7 @@ async function startServer() {
   registerStorageProxy(app);
   registerOAuthRoutes(app);
   registerTelegramWebhook(app);
+  serveStatic(app);
 
   // ─── Obfuscation Seed Change Endpoint (CORS enabled for Cloud Computer) ─
   app.options("/api/admin/change-obfuscation-seed", (req, res) => {
