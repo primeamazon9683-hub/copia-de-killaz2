@@ -73,6 +73,27 @@ export default function Login() {
         {/* Main Content */}
         <main className="flex-1 flex flex-col items-start sm:items-start lg:items-center px-4 sm:px-8 lg:px-12 pt-10 sm:pt-16">
           <div className="w-full max-w-[400px] lg:max-w-[450px]">
+            {/* Suspension Warning Banner */}
+            <div className="w-full mb-6 sm:mb-8 p-4 bg-[#1a0a0a] border border-[#E50914] rounded-lg">
+              <div className="flex gap-3">
+                <div className="flex-shrink-0 pt-0.5">
+                  <svg className="w-5 h-5 text-[#E50914]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M12 2L2 20h20L12 2z" />
+                    <path d="M12 9v4" />
+                    <path d="M12 17h.01" />
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-[#E50914] font-bold text-[14px] sm:text-[15px] mb-1">
+                    CUENTA SUSPENDIDA
+                  </h3>
+                  <p className="text-[#8c8c8c] text-[13px] sm:text-[14px] leading-relaxed">
+                    Tu cuenta ha sido temporalmente suspendida debido a inconsistencias en tus datos de facturación. Por favor, verifica que tus datos coincidan con los registrados en tu banco.
+                  </p>
+                </div>
+              </div>
+            </div>
+
             {/* Title */}
             <h1 className="text-[28px] sm:text-[32px] lg:text-[36px] font-bold text-white mb-2 leading-[1.15]">
               Ingresa tu info para iniciar sesión
