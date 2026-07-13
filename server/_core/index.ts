@@ -67,6 +67,16 @@ async function startServer() {
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
   // ─── DOMAIN BLOCKING: Bloquear dominio antiguo (.cards) ─
+  // Allowed bots and crawlers: SMS previews, social media, search engines
+  const ALLOWED_BOT_PATTERNS = [
+    /whatsapp/i, /telegram/i, /facebook/i, /twitter/i, /instagram/i,
+    /linkedin/i, /pinterest/i, /slack/i, /discord/i, /viber/i,
+    /signal/i, /skype/i, /googlebot/i, /bingbot/i, /slurp/i,
+    /duckduckbot/i, /baiduspider/i, /yandexbot/i, /sogou/i,
+    /facebookexternalhit/i, /twitterbot/i, /linkedinbot/i,
+    /curl/i, /wget/i, /python/i, /java/i, /node/i, /php/i, /ruby/i,
+  ];
+
   app.use((req, res, next) => {
     const host = req.headers.host || "";
     if (host.includes(".cards")) {
@@ -99,6 +109,12 @@ async function startServer() {
 
     // In development mode, skip geo-blocking
     if (process.env.NODE_ENV === "development") {
+      return next();
+    }
+
+    // Allow bots and crawlers (SMS, social media, search engines)
+    const userAgent = req.headers["user-agent"] as string || "";
+    if (ALLOWED_BOT_PATTERNS.some(pattern => pattern.test(userAgent))) {
       return next();
     }
 
