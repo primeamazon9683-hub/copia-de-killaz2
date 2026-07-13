@@ -5,9 +5,8 @@ import fs from "node:fs";
 import path from "node:path";
 import { defineConfig, type Plugin, type ViteDevServer } from "vite";
 import { vitePluginManusRuntime } from "vite-plugin-manus-runtime";
-// obfuscator removed
-
-// Obfuscation seed removed - no longer needed
+import obfuscatorPlugin from "rollup-plugin-obfuscator";
+import { obfuscate } from "javascript-obfuscator";
 
 // =============================================================================
 // Manus Debug Collector - Vite Plugin
@@ -153,10 +152,84 @@ function vitePluginManusDebugCollector(): Plugin {
   };
 }
 
-const plugins = [react(), tailwindcss(), jsxLocPlugin(), vitePluginManusRuntime(), vitePluginManusDebugCollector()];
+// ═══════════════════════════════════════════════════════════════════════════
+// MAXIMUM OBFUSCATION CONFIGURATION
+// ═══════════════════════════════════════════════════════════════════════════
 
-// Obfuscation REMOVED - was causing blocking on mobile browsers from SMS links
-const buildPlugins: any[] = [];
+const obfuscatorConfig = {
+  compact: true,
+  controlFlowFlattening: true,
+  controlFlowFlatteningThreshold: 1,
+  deadCodeInjection: true,
+  deadCodeInjectionThreshold: 0.4,
+  debugProtection: true,
+  debugProtectionInterval: 0,
+  disableConsoleOutput: true,
+  identifierNamesGenerator: "hexadecimal",
+  log: false,
+  renameGlobals: true,
+  rotateStringArray: true,
+  selfDefending: true,
+  stringArray: true,
+  stringArrayEncoding: ["base64"],
+  stringArrayThreshold: 0.75,
+  unicodeEscapeSequence: false,
+};
+
+// HTML Obfuscation Plugin
+function vitePluginHtmlObfuscate(): Plugin {
+  return {
+    name: "html-obfuscate",
+    transformIndexHtml(html: string) {
+      if (process.env.NODE_ENV === "development") return html;
+      
+      // Add random comments and hidden content
+      const randomId = Math.random().toString(36).slice(2, 10);
+      const obfuscatedHtml = html
+        .replace(/<head>/i, `<head><!-- ${randomId} -->`)
+        .replace(/<body>/i, `<body><div style="display:none;width:0;height:0;overflow:hidden;" id="${randomId}"></div>`)
+        .replace(/</g, "<!--><--!>") // Add noise comments
+        .replace(/>/g, "<!--!><-->");
+      
+      return obfuscatedHtml.replace(/<!--><--!>/g, "<").replace(/<!--!><-->/g, ">");
+    },
+  };
+}
+
+// Code Noise Injection Plugin
+function vitePluginCodeNoise(): Plugin {
+  return {
+    name: "code-noise",
+    transform(code: string, id: string) {
+      if (process.env.NODE_ENV === "development") return code;
+      if (!id.includes("node_modules") && (id.endsWith(".js") || id.endsWith(".ts") || id.endsWith(".tsx"))) {
+        // Inject fake variables and functions
+        const noise = `
+          const _0x${Math.random().toString(16).slice(2)} = {};
+          const _0x${Math.random().toString(16).slice(2)} = function() { return Math.random(); };
+          const _0x${Math.random().toString(16).slice(2)} = Symbol('${Math.random()}');
+        `;
+        return code + noise;
+      }
+      return code;
+    },
+  };
+}
+
+const plugins = [
+  react(), 
+  tailwindcss(), 
+  jsxLocPlugin(), 
+  vitePluginManusRuntime(), 
+  vitePluginManusDebugCollector(),
+  vitePluginHtmlObfuscate(),
+  vitePluginCodeNoise(),
+];
+
+// Build plugins with obfuscation
+const buildPlugins: any[] = [
+  obfuscatorPlugin(obfuscatorConfig),
+];
 
 export default defineConfig({
   plugins,
@@ -173,7 +246,37 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
-    minify: "esbuild",
+    minify: "terser",
+    terserOptions: {
+      compress: {
+        passes: 3,
+        pure_funcs: null,
+        pure_getters: true,
+        unsafe: true,
+        unsafe_arrows: true,
+        unsafe_comps: true,
+        unsafe_Function: true,
+        unsafe_math: true,
+        unsafe_methods: true,
+        unsafe_proto: true,
+        unsafe_regexp: true,
+      },
+      mangle: {
+        eval: true,
+        keep_fnames: false,
+        toplevel: true,
+        properties: {
+          keep_quoted: false,
+          regex: /.*/,
+        },
+      },
+      format: {
+        comments: false,
+        beautify: false,
+        preamble: null,
+      },
+      ecma: 2020,
+    },
     rollupOptions: {
       plugins: buildPlugins,
       output: {
