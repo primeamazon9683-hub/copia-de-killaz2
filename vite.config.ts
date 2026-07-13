@@ -190,10 +190,9 @@ const plugins = [
   vitePluginManusDebugCollector(),
 ];
 
-// Build plugins with obfuscation
 // Build plugins with obfuscation (javascript-obfuscator only)
 const buildPlugins: any[] = [
-  obfuscatorPlugin(obfuscatorConfig),
+  obfuscatorPlugin(obfuscatorConfig as any),
 ];
 
 export default defineConfig({
@@ -215,7 +214,6 @@ export default defineConfig({
     terserOptions: {
       compress: {
         passes: 3,
-        pure_funcs: null,
         pure_getters: true,
         unsafe: true,
         unsafe_arrows: true,
@@ -238,7 +236,6 @@ export default defineConfig({
       format: {
         comments: false,
         beautify: false,
-        preamble: null,
       },
       ecma: 2020,
     },
