@@ -33,16 +33,15 @@ RUN pnpm install --frozen-lockfile --prod
 
 # Copy built application from builder
 COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/client/dist ./client/dist
 COPY --from=builder /app/drizzle ./drizzle
-COPY --from=builder /app/server ./server
+COPY --from=builder /app/shared ./shared
 
 # Expose port (Railway will use PORT env variable)
-EXPOSE 3000
+EXPOSE ${PORT:-3000}
 
 # Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:3000/health', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})"
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
+  CMD node -e "const http=require('http');const port=process.env.PORT||3000;http.get('http://localhost:'+port+'/', (r) => {if (r.statusCode >= 500) process.exit(1)})"
 
 # Start the application
-CMD ["node", "dist/server/_core/index.js"]
+CMD ["node", "dist/index.js"]
