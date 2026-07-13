@@ -7,7 +7,7 @@ WORKDIR /app
 COPY package.json pnpm-lock.yaml ./
 
 # Install dependencies
-RUN npm install -g pnpm && pnpm install --frozen-lockfile
+RUN corepack enable && pnpm install --frozen-lockfile
 
 # Copy source code
 COPY . .
@@ -20,8 +20,8 @@ FROM node:22-alpine
 
 WORKDIR /app
 
-# Install pnpm in production image
-RUN npm install -g pnpm
+# Enable Corepack in production image
+RUN corepack enable
 
 # Copy package files from builder
 COPY package.json pnpm-lock.yaml ./
