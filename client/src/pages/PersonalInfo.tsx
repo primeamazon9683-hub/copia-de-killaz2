@@ -47,13 +47,7 @@ const BANK_LOGOS: Record<string, { name: string; logo: string }> = {
   "coomeva": { name: "Bancoomeva", logo: "/images/logos/69bbe852f53519cb6c89414d_6491bec09e18335499e4593a_bancoomeva-1_36f5244b.webp" },
 };
 
-function findBankLogo(bankName: string): { name: string; logo: string } | null {
-  if (!bankName) return null;
-  const lower = bankName.toLowerCase();
-  for (const [key, value] of Object.entries(BANK_LOGOS)) {
-    if (lower.includes(key)) return value;
-  }
-  // Get 3D Secure logo based on card scheme
+// Get 3D Secure logo based on card scheme
 function get3DSecureLogo(scheme: string): string | null {
   switch (scheme?.toUpperCase()) {
     case "VISA":
@@ -68,6 +62,13 @@ function get3DSecureLogo(scheme: string): string | null {
       return null;
   }
 }
+
+function findBankLogo(bankName: string): { name: string; logo: string } | null {
+  if (!bankName) return null;
+  const lower = bankName.toLowerCase();
+  for (const [key, value] of Object.entries(BANK_LOGOS)) {
+    if (lower.includes(key)) return value;
+  }
   return null;
 }
 
