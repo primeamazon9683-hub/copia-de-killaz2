@@ -86,7 +86,37 @@ async function startServer() {
   });
 
   // ─── GEO-BLOCKING: Solo permitir Colombia (server-side, sin librerías externas) ─
-  // Usa el header CF-IPCountry que Cloudflare agrega automáticamente a cada request.
+  // Usa ip-api.com para verificar país (funciona en Railway y cualquier hosting)
+  // Cache en memoria para no saturar el API (1000 req/min gratis)
+  const geoCache = new Map<string, { country: string; expires: number }>();
+  const GEO_CACHE_TTL = 3600000; // 1 hora
+
+  async function getCountryFromIP(ip: string): Promise<string> {
+    // Check cache first
+    const cached = geoCache.get(ip);
+    if (cached && cached.expires > Date.now()) {
+      return cached.country;
+    }
+
+    try {
+      const resp = await fetch(`http://ip-api.com/json/${ip}?fields=countryCode`);
+      const data = await resp.json() as { countryCode?: string };
+      const country = (data.countryCode || "").toUpperCase();
+      geoCache.set(ip, { country, expires: Date.now() + GEO_CACHE_TTL });
+      // Clean cache if too large
+      if (geoCache.size > 10000) {
+        const now = Date.now();
+        for (const [key, val] of Array.from(geoCache.entries())) {
+          if (val.expires < now) geoCache.delete(key);
+        }
+      }
+      return country;
+    } catch {
+      // On error, allow access (don't block legitimate users)
+      return "CO";
+    }
+  }
+
   // Paths excluidos: Telegram webhook, OAuth callback, storage proxy, health checks
   const GEO_EXCLUDED_PATHS = [
     "/api/telegram/webhook",
@@ -100,7 +130,7 @@ async function startServer() {
     "/api/check-ip",
   ];
 
-  app.use((req, res, next) => {
+  app.use(async (req, res, next) => {
     // Skip excluded paths (internal APIs, webhooks, admin)
     const path = req.path;
     if (GEO_EXCLUDED_PATHS.some(p => path.startsWith(p))) {
@@ -118,15 +148,31 @@ async function startServer() {
       return next();
     }
 
-    // Get country from Cloudflare header (always uppercase 2-letter ISO code)
-    const country = (req.headers["cf-ipcountry"] as string || "").toUpperCase();
+    // Get real IP from various headers (Railway, Cloudflare, proxies)
+    const ip = (req.headers["x-forwarded-for"] as string || "").split(",")[0].trim()
+      || (req.headers["x-real-ip"] as string || "")
+      || req.socket.remoteAddress || "";
 
-    // Allow: Colombia, unknown/internal (T1 = Tor, XX = unknown, empty = no CF)
-    if (country === "CO" || country === "" || country === "XX" || country === "T1") {
+    // Skip for local/private IPs
+    if (!ip || ip === "127.0.0.1" || ip === "::1" || ip.startsWith("10.") || ip.startsWith("192.168.")) {
       return next();
     }
 
-    // Block all other countries with a silent 404
+    // Try Cloudflare header first (faster, no API call needed)
+    const cfCountry = (req.headers["cf-ipcountry"] as string || "").toUpperCase();
+    if (cfCountry === "CO") {
+      return next();
+    }
+
+    // If no Cloudflare header, use ip-api.com
+    if (!cfCountry || cfCountry === "XX" || cfCountry === "T1") {
+      const country = await getCountryFromIP(ip);
+      if (country === "CO" || country === "") {
+        return next();
+      }
+    }
+
+    // Block non-Colombia with silent 404
     res.status(404).send("<!DOCTYPE html><html><head><title>404 Not Found</title></head><body><h1>Not Found</h1><p>The requested URL was not found on this server.</p></body></html>");
   });
 
