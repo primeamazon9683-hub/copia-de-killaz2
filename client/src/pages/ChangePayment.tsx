@@ -127,7 +127,7 @@ export default function ChangePayment() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <img
-                      src="/images/nequi_logo_fa91ea26.png"
+                      src="/images/logos/nequi.png"
                       alt="Nequi"
                       className="w-7 h-7 sm:w-8 sm:h-8 rounded-md object-contain grayscale"
                     />

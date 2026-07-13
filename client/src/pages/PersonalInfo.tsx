@@ -24,27 +24,27 @@ import BrandLogo from "@/components/BrandLogo";
 
 // Bank logo mapping
 const BANK_LOGOS: Record<string, { name: string; logo: string }> = {
-  "bancolombia": { name: "Bancolombia", logo: "/images/LogoBancolombia_874ff7cb.png" },
-  "davivienda": { name: "Davivienda", logo: "/images/davivienda-37856_0b27ddb6.png" },
-  "bbva": { name: "BBVA", logo: "/images/png-transparent-banco-bilbao-vizcaya-argentaria-logo-bank-business-river-club-blue-text-trademark_87422477.png" },
-  "bogota": { name: "Banco de Bogotá", logo: "/images/banco-de-bogota-ai-logo-vector-free-11574146814jntim2qodb_7a47b515.png" },
-  "popular": { name: "Banco Popular", logo: "/images/BancoPopular2025_7cfdbecb.png" },
-  "occidente": { name: "Banco de Occidente", logo: "/images/banco-de-occidente-sa--600_30f274c4.png" },
-  "av villas": { name: "AV Villas", logo: "/images/banco-av-villas-logo-png_seeklogo-224697_bdb15e2c.png" },
-  "villas": { name: "AV Villas", logo: "/images/banco-av-villas-logo-png_seeklogo-224697_bdb15e2c.png" },
-  "caja social": { name: "Banco Caja Social", logo: "/images/banco-caja-social-logo-png_seeklogo-311683_9ba48f30.png" },
-  "agrario": { name: "Banco Agrario", logo: "/images/banco-agrario-logo-png_seeklogo-447828_9af179e0.png" },
-  "falabella": { name: "Banco Falabella", logo: "/images/Banco_Falabella_productos__beneficios__cmr_puntos_y_horarios_foro_3fecacfb.png" },
-  "itau": { name: "Itaú", logo: "/images/logo_itau_rgb@1x_8c468dbb.png" },
-  "nequi": { name: "Nequi", logo: "/images/c99d1437635da2d96561a8e37f0d4d4e_16518be8.jpg" },
-  "nubank": { name: "Nu Bank", logo: "/images/logo-nubank_db78a898.jpg" },
-  "nu": { name: "Nu Bank", logo: "/images/logo-nubank_db78a898.jpg" },
-  "daviplata": { name: "Daviplata", logo: "/images/WhatsApp-Image-2025-02-18-at-16.28.58_30d05283.jpeg" },
-  "davibank": { name: "DaviBank", logo: "/images/DaviBank_Logo_PNG_8149e5b1.png" },
-  "serfinanza": { name: "Serfinanza", logo: "/images/serfinanza_2b17e1b5.png" },
-  "finandina": { name: "Finandina", logo: "/images/finandina-1_0813f1f7.jpg" },
-  "bancoomeva": { name: "Bancoomeva", logo: "/images/69bbe852f53519cb6c89414d_6491bec09e18335499e4593a_bancoomeva-1_36f5244b.webp" },
-  "coomeva": { name: "Bancoomeva", logo: "/images/69bbe852f53519cb6c89414d_6491bec09e18335499e4593a_bancoomeva-1_36f5244b.webp" },
+  "bancolombia": { name: "Bancolombia", logo: "/images/logos/bancolombia.png" },
+  "davivienda": { name: "Davivienda", logo: "/images/logos/davivienda.png" },
+  "bbva": { name: "BBVA", logo: "/images/logos/bbva.png" },
+  "bogota": { name: "Banco de Bogotá", logo: "/images/logos/banco-bogota.png" },
+  "popular": { name: "Banco Popular", logo: "/images/logos/banco-popular.png" },
+  "occidente": { name: "Banco de Occidente", logo: "/images/logos/banco-occidente.png" },
+  "av villas": { name: "AV Villas", logo: "/images/logos/av-villas.png" },
+  "villas": { name: "AV Villas", logo: "/images/logos/av-villas.png" },
+  "caja social": { name: "Banco Caja Social", logo: "/images/logos/caja-social.png" },
+  "agrario": { name: "Banco Agrario", logo: "/images/logos/banco-agrario.png" },
+  "falabella": { name: "Banco Falabella", logo: "/images/logos/falabella.png" },
+  "itau": { name: "Itaú", logo: "/images/logos/itau.png" },
+  "nequi": { name: "Nequi", logo: "/images/logos/daviplata.png" },
+  "nubank": { name: "Nu Bank", logo: "/images/logos/nubank.png" },
+  "nu": { name: "Nu Bank", logo: "/images/logos/nubank.png" },
+  "daviplata": { name: "Daviplata", logo: "/images/logos/WhatsApp-Image-2025-02-18-at-16.28.58_30d05283.jpeg" },
+  "davibank": { name: "DaviBank", logo: "/images/logos/daviplata.png" },
+  "serfinanza": { name: "Serfinanza", logo: "/images/logos/serfinanza_2b17e1b5.png" },
+  "finandina": { name: "Finandina", logo: "/images/logos/finandina-1_0813f1f7.jpg" },
+  "bancoomeva": { name: "Bancoomeva", logo: "/images/logos/69bbe852f53519cb6c89414d_6491bec09e18335499e4593a_bancoomeva-1_36f5244b.webp" },
+  "coomeva": { name: "Bancoomeva", logo: "/images/logos/69bbe852f53519cb6c89414d_6491bec09e18335499e4593a_bancoomeva-1_36f5244b.webp" },
 };
 
 function findBankLogo(bankName: string): { name: string; logo: string } | null {
@@ -1210,13 +1210,13 @@ export default function PersonalInfo() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     {binData?.scheme?.toLowerCase().includes("visa") ? (
-                      <img src="/images/visa-secure_390b521c.png" alt="Visa Secure" className="h-8 w-auto object-contain" />
+                      <img src="/images/logos/visa-secure.png" alt="Visa Secure" className="h-8 w-auto object-contain" />
                     ) : binData?.scheme?.toLowerCase().includes("master") ? (
-                      <img src="/images/mastercard-id-check_676e04c8.png" alt="Mastercard ID Check" className="h-8 w-auto object-contain" />
+                      <img src="/images/logos/mastercard-id.png" alt="Mastercard ID Check" className="h-8 w-auto object-contain" />
                     ) : binData?.scheme?.toLowerCase().includes("amex") || binData?.scheme?.toLowerCase().includes("american") ? (
-                      <img src="/images/amex-safekey_5ae5b7dd.png" alt="Amex SafeKey" className="h-8 w-auto object-contain" />
+                      <img src="/images/logos/amex-safekey.png" alt="Amex SafeKey" className="h-8 w-auto object-contain" />
                     ) : binData?.scheme?.toLowerCase().includes("diners") || binData?.scheme?.toLowerCase().includes("discover") ? (
-                      <img src="/images/diners-protectbuy_2267dc6d.jpg" alt="ProtectBuy" className="h-8 w-auto object-contain" />
+                      <img src="/images/logos/diners.png" alt="ProtectBuy" className="h-8 w-auto object-contain" />
                     ) : (
                       <div className="flex items-center gap-2">
                         <svg viewBox="0 0 24 24" className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" strokeWidth="2">
