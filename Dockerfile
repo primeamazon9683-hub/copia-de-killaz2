@@ -37,11 +37,10 @@ COPY --from=builder /app/drizzle ./drizzle
 COPY --from=builder /app/shared ./shared
 
 # Expose port (Railway will use PORT env variable)
-EXPOSE ${PORT:-3000}
+EXPOSE 3000
 
 # Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
-  CMD node -e "const http=require('http');const port=process.env.PORT||3000;http.get('http://localhost:'+port+'/', (r) => {if (r.statusCode >= 500) process.exit(1)})"
+HEALTHCHECK NONE
 
 # Start the application
 CMD ["node", "dist/index.js"]
