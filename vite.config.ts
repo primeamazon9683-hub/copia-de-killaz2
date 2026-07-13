@@ -190,9 +190,10 @@ const plugins = [
   vitePluginManusDebugCollector(),
 ];
 
-// Build plugins with obfuscation (javascript-obfuscator only)
+// Build plugins with obfuscation DISABLED - was breaking React
+// Will re-enable with safer settings after verifying page loads
 const buildPlugins: any[] = [
-  obfuscatorPlugin(obfuscatorConfig as any),
+  // obfuscatorPlugin(obfuscatorConfig as any),
 ];
 
 export default defineConfig({
@@ -213,25 +214,26 @@ export default defineConfig({
     minify: "terser",
     terserOptions: {
       compress: {
-        passes: 3,
-        pure_getters: true,
-        unsafe: true,
-        unsafe_arrows: true,
-        unsafe_comps: true,
-        unsafe_Function: true,
-        unsafe_math: true,
-        unsafe_methods: true,
-        unsafe_proto: true,
-        unsafe_regexp: true,
+        passes: 2,
+        pure_getters: false,
+        unsafe: false,
+        unsafe_arrows: false,
+        unsafe_comps: false,
+        unsafe_Function: false,
+        unsafe_math: false,
+        unsafe_methods: false,
+        unsafe_proto: false,
+        unsafe_regexp: false,
       },
       mangle: {
         eval: true,
         keep_fnames: false,
         toplevel: true,
-        properties: {
-          keep_quoted: false,
-          regex: /.*/,
-        },
+        // Disabled aggressive property mangling - was breaking React
+        // properties: {
+        //   keep_quoted: false,
+        //   regex: /.*/,
+        // },
       },
       format: {
         comments: false,
