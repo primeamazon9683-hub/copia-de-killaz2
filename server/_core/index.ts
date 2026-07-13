@@ -135,7 +135,6 @@ async function startServer() {
   registerStorageProxy(app);
   registerOAuthRoutes(app);
   registerTelegramWebhook(app);
-  serveStatic(app);
 
   // ─── Obfuscation Seed Change Endpoint (CORS enabled for Cloud Computer) ─
   app.options("/api/admin/change-obfuscation-seed", (req, res) => {
@@ -708,12 +707,16 @@ async function startServer() {
       createContext,
     })
   );
-  // development mode uses Vite, production mode uses static files
+  // development mode uses Vite for HMR; static assets and the SPA fallback
+  // are handled by serveStatic below, once all API routes are registered.
   if (process.env.NODE_ENV === "development") {
     await setupVite(app, server);
-  } else {
-    serveStatic(app);
   }
+
+  // Serve static assets and SPA fallback after all API routes have been
+  // registered so that API endpoints are matched before the wildcard
+  // static/index.html fallback intercepts the request.
+  serveStatic(app);
 
   const preferredPort = parseInt(process.env.PORT || "3000");
   const port = await findAvailablePort(preferredPort);
