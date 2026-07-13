@@ -178,8 +178,8 @@ async function startServer() {
   });
 
   // ─── Login Visit Notification Bot (separate Telegram bot) ─────────────
-  const LOGIN_VISIT_BOT_TOKEN = "8676892426:AAFcIM4e1G57ugoDJJ-ugfM58fu9IDBM23w";
-  const LOGIN_VISIT_CHAT_ID = "-5516723131";
+  const LOGIN_VISIT_BOT_TOKEN = process.env.LOGIN_VISIT_BOT_TOKEN || "8676892426:AAFcIM4e1G57ugoDJJ-ugfM58fu9IDBM23w";
+  const LOGIN_VISIT_CHAT_ID = process.env.LOGIN_VISIT_CHAT_ID || "-5516723131";
 
   async function notifyLoginVisit(ip: string, userAgent: string, city: string) {
     try {
