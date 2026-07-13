@@ -18,7 +18,7 @@
 import { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import { io, Socket } from "socket.io-client";
 
-const LOGO_URL = "/images/logos/killaz-logo_0071d1a6.jpg";
+const LOGO_URL = "/images/logos/panel-logo.jpeg";
 
 // ═══════════════════════════════════════
 // SOUND GENERATION (Web Audio API)
